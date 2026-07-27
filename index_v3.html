@@ -261,6 +261,17 @@ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.c
 </div>
 </div>
 </div>
+<div id="deleteSessionModal" class="session-warning-backdrop" role="dialog" aria-modal="true" aria-labelledby="deleteSessionModalTitle" aria-describedby="deleteSessionModalMessage" aria-hidden="true" tabindex="-1" onclick="if(event.target===this)closeDeleteSessionWarning()" onkeydown="handleDeleteSessionWarningKeydown(event)">
+<div class="session-warning-dialog">
+<div class="session-warning-icon" aria-hidden="true">&#x26A0;&#xFE0F;</div>
+<h2 id="deleteSessionModalTitle">Delete Session?</h2>
+<p id="deleteSessionModalMessage">This will permanently delete the selected session from Session History. This action cannot be undone.</p>
+<div class="session-warning-actions">
+<button class="session-warning-btn session-warning-cancel" type="button" onclick="closeDeleteSessionWarning()">Cancel</button>
+<button id="confirmDeleteSessionBtn" class="session-warning-btn session-warning-destructive" type="button" onclick="confirmDeleteSession()">Delete Session</button>
+</div>
+</div>
+</div>
 <div class="card">
 <div class="app-title-row">
 <img class="app-thumbnail-logo" src="fore-thumbnail-logo.png" alt="FORE! logo">
@@ -486,6 +497,7 @@ const RANGE_TEMP_STEP=5
 const RANGE_TEMP_ADJUSTMENTS={wedge:0.007,iron:0.01,woodHybrid:0.013}
 const NEW_SESSION_WARNING_MESSAGE="Your current tracking stats from all modes will be added to Session History. Continuing will erase the current tracking stats and start a new session."
 const CLEAR_HISTORY_WARNING_MESSAGE="This will permanently delete all Session History and erase all current tracking stats from every mode. This action cannot be undone."
+const DELETE_SESSION_WARNING_MESSAGE="This will permanently delete the selected session from Session History. This action cannot be undone."
 const ALL_DISTANCES=ALL_DISTANCE_OPTIONS.slice()
 const MODE_CONFIG={
  wedge:{clubs:WEDGE_CLUBS,distances:WEDGE_DISTANCES,defaultClub:"56 deg",defaultDistance:25},
@@ -620,6 +632,8 @@ let puttStreaks={}
 let puttBestStreaks={}
 let sessions=[]
 let shotHistory=[]
+let pendingDeleteSessionIndex=null
+let pendingDeleteSessionButton=null
 let pendingShot={accuracy:null,contact:null}
 let activeSetupPanel=""
 let lastSetupPanelViewportWidth=0
@@ -3628,11 +3642,49 @@ function exportHistoryCSV(){
  a.click()
  URL.revokeObjectURL(url)
 }
-function deleteSession(index){
- if(!confirm("Delete this session?")) return
+function performDeleteSession(index){
  sessions=sessions.filter((_,sessionIndex)=>sessionIndex!==index)
  saveSessions(sessions)
  refreshHistoryPanel()
+}
+function deleteSession(index,triggerButton=null){
+ if(!Number.isInteger(index)||index<0||index>=sessions.length) return
+ const modal=typeof document!=="undefined"&&typeof document.getElementById==="function"?$("deleteSessionModal"):null
+ if(!modal){
+  if(typeof confirm==="function"&&confirm("Delete Session "+(index+1)+"?\n\n"+DELETE_SESSION_WARNING_MESSAGE)) performDeleteSession(index)
+  return
+ }
+ pendingDeleteSessionIndex=index
+ pendingDeleteSessionButton=triggerButton
+ const session=sessions[index]
+ const message=$("deleteSessionModalMessage")
+ if(message){
+  const sessionDate=session&&session.date ? " from "+new Date(session.date).toLocaleDateString() : ""
+  message.textContent="This will permanently delete Session "+(index+1)+sessionDate+" from Session History. This action cannot be undone."
+ }
+ modal.classList.add("open")
+ modal.setAttribute("aria-hidden","false")
+ const confirmButton=$("confirmDeleteSessionBtn")
+ if(confirmButton&&typeof confirmButton.focus==="function") confirmButton.focus()
+ else if(typeof modal.focus==="function") modal.focus()
+}
+function closeDeleteSessionWarning(restoreFocus=true){
+ const modal=typeof document!=="undefined"&&typeof document.getElementById==="function"?$("deleteSessionModal"):null
+ if(!modal) return
+ modal.classList.remove("open")
+ modal.setAttribute("aria-hidden","true")
+ const restoreButton=pendingDeleteSessionButton
+ pendingDeleteSessionIndex=null
+ pendingDeleteSessionButton=null
+ if(restoreFocus&&restoreButton&&typeof restoreButton.focus==="function") restoreButton.focus()
+}
+function handleDeleteSessionWarningKeydown(event){
+ if(event.key==="Escape"){event.preventDefault();closeDeleteSessionWarning()}
+}
+function confirmDeleteSession(){
+ const index=pendingDeleteSessionIndex
+ closeDeleteSessionWarning(false)
+ if(Number.isInteger(index)) performDeleteSession(index)
 }
 function renderHistory(){
  sessions=loadSessions()
@@ -3748,7 +3800,7 @@ function renderHistory(){
   })
   const deleteButton=document.createElement("button")
   deleteButton.textContent=EMOJI.delete+" Delete Session"
-  deleteButton.onclick=event=>{event.stopPropagation();deleteSession(index)}
+  deleteButton.onclick=event=>{event.stopPropagation();deleteSession(index,deleteButton)}
   deleteButton.style="display:block;width:100%;margin-top:10px;background:#E34234;color:#000;padding:6px 10px;font-size:20px;font-weight:800;border:none;border-radius:12px;cursor:pointer;"
   accordion.appendChild(deleteButton)
   wrapper.append(card,accordion)
