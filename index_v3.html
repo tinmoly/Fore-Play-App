@@ -367,7 +367,7 @@ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.c
 <p>🟢 Center: <span id="statsCenter">0</span> | 🚫 Off-Center: <span id="statsOffCenter">0</span></p>
 <p>🚩 Make %: <span id="statsMakePercent">0</span>% | 💥 Flush %: <span id="statsFlushPercent">0</span>%</p>
 <p><span id="statsStreakTitle">Streak</span>: <span id="statsStreak">0</span> <span id="statsStreakLabel"></span></p>
-<p>Duffs: <span id="statsDuffs">0</span><span id="statsDuffMarks"></span> | Shanks: <span id="statsShanks">0</span><span id="statsShankMarks"></span> | Skulls: <span id="statsSkulls">0</span><span id="statsSkullMarks"></span></p>
+<p>Mis-Hits: <span id="statsMisHits">0</span> | Duffs: <span id="statsDuffs">0</span><span id="statsDuffMarks"></span> | Shanks: <span id="statsShanks">0</span><span id="statsShankMarks"></span> | Skulls: <span id="statsSkulls">0</span><span id="statsSkullMarks"></span></p>
 </div>
 </div>
 
@@ -376,7 +376,7 @@ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.c
 <p>&#x2705; Made: <span id="chipStatsMade">0</span> | &#x26D4; Missed: <span id="chipStatsMissed">0</span></p>
 <p>&#x1F6A9; Make %: <span id="chipStatsMakePercent">0</span>%</p>
 <p><span id="chipStatsStreakTitle">Streak</span>: <span id="chipStatsStreak">0</span> <span id="chipStatsStreakLabel"></span></p>
-<p>Duffs: <span id="chipStatsDuffs">0</span><span id="chipStatsDuffMarks"></span> | Shanks: <span id="chipStatsShanks">0</span><span id="chipStatsShankMarks"></span> | Skulls: <span id="chipStatsSkulls">0</span><span id="chipStatsSkullMarks"></span></p>
+<p>Mis-Hits: <span id="chipStatsMisHits">0</span> | Duffs: <span id="chipStatsDuffs">0</span><span id="chipStatsDuffMarks"></span> | Shanks: <span id="chipStatsShanks">0</span><span id="chipStatsShankMarks"></span> | Skulls: <span id="chipStatsSkulls">0</span><span id="chipStatsSkullMarks"></span></p>
 </div>
 </div>
 
@@ -1751,7 +1751,9 @@ function summarizeShotResults(history,trackerKey){
   if(result.type==="shank") shanks++
   if(result.type==="skull") skulls++
  })
- return {made,missed,duffs,shanks,skulls,total:made+missed}
+ const misHits=duffs+shanks+skulls
+ const misses=Math.max(0,missed-misHits)
+ return {made,misses,missed,misHits,duffs,shanks,skulls,total:made+missed}
 }
 function isMadeChipType(type){return type==="made"||type==="gimme"}
 function summarizeChipShotResults(history){
@@ -1765,7 +1767,9 @@ function summarizeChipShotResults(history){
   if(type==="shank")shanks++
   if(type==="skull")skulls++
  })
- return {made,missed,gimmes,ringMisses:Math.max(0,missed-duffs-shanks-skulls),duffs,shanks,skulls,total:made+missed}
+ const misHits=duffs+shanks+skulls
+ const misses=Math.max(0,missed-misHits)
+ return {made,misses,missed,misHits,gimmes,duffs,shanks,skulls,total:made+missed}
 }
 function summarizePuttShotResults(history){
  let made=0,missed=0
@@ -1806,10 +1810,12 @@ function summarizeChipStats(statsMap){
   gimmes+=bucket.gimmes||0
   duffs+=bucket.duffs||0
   shanks+=bucket.shanks||0
-  skulls+=bucket.skulls||0
+ skulls+=bucket.skulls||0
  }))
  const total=made+missed
- return {made,missed,gimmes,ringMisses:Math.max(0,missed-duffs-shanks-skulls),duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
+ const misHits=duffs+shanks+skulls
+ const misses=Math.max(0,missed-misHits)
+ return {made,misses,missed,misHits,gimmes,duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
 }
 function summarizePuttStats(statsMap){
  let made=0,missed=0
@@ -1832,10 +1838,12 @@ function summarizeSessionTracker(session,trackerKey){
   missed+=bucket.missed||0
   duffs+=bucket.duffs||0
   shanks+=bucket.shanks||0
-  skulls+=bucket.skulls||0
+ skulls+=bucket.skulls||0
  })))
  const total=made+missed
- return {made,missed,duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
+ const misHits=duffs+shanks+skulls
+ const misses=Math.max(0,missed-misHits)
+ return {made,misses,missed,misHits,duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
 }
 function summarizeSessionChip(session){return summarizeChipStats(session.chipStats)}
 function summarizeSessionPutt(session){return summarizePuttStats(session.puttStats)}
@@ -3151,7 +3159,9 @@ function renderTrackerStats(trackerKey){
   modeStats,
   currentPct,
   made:modeStats.made,
+  misses:modeStats.misses,
   missed:modeStats.missed,
+  misHits:modeStats.misHits,
   duffs:modeStats.duffs,
   shanks:modeStats.shanks,
   skulls:modeStats.skulls,
@@ -3206,11 +3216,12 @@ function updateStats(){
   else if(currentStreak>=3) fireCount=2
   else if(currentStreak>=1) fireCount=1
   $("chipStatsMade").textContent=summary.made
-  $("chipStatsMissed").textContent=summary.missed
+  $("chipStatsMissed").textContent=summary.misses
   $("chipStatsMakePercent").textContent=summary.total?Math.round(summary.made/summary.total*100):0
   $("chipStatsStreakTitle").textContent=getStreakEmojis(currentStreak)
   $("chipStatsStreak").textContent=currentStreak
   $("chipStatsStreakLabel").textContent=EMOJI.fire.repeat(fireCount)
+  $("chipStatsMisHits").textContent=summary.misHits
   $("chipStatsDuffs").textContent=summary.duffs
   $("chipStatsDuffMarks").textContent=summary.duffs?" "+EMOJI.duffMark.repeat(summary.duffs):""
   $("chipStatsShanks").textContent=summary.shanks
@@ -3239,14 +3250,15 @@ function updateStats(){
  else if(streakValue>=3) fireCount=2
  else if(streakValue>=1) fireCount=1
  $("statsMade").textContent=accuracyModeStats.made
- $("statsMissed").textContent=accuracyModeStats.missed
+ $("statsMissed").textContent=accuracyModeStats.misses
  $("statsCenter").textContent=contactModeStats.made
- $("statsOffCenter").textContent=contactModeStats.missed
+ $("statsOffCenter").textContent=contactModeStats.misses
  $("statsMakePercent").textContent=accuracyModeStats.currentPct
  $("statsFlushPercent").textContent=contactModeStats.currentPct
  $("statsStreakTitle").textContent=getStreakEmojis(streakValue)
  $("statsStreak").textContent=streakValue
  $("statsStreakLabel").textContent=EMOJI.fire.repeat(fireCount)
+ $("statsMisHits").textContent=accuracyModeStats.misHits
  $("statsDuffs").textContent=accuracyModeStats.duffs
  $("statsDuffMarks").textContent=accuracyModeStats.duffs ? " "+EMOJI.duffMark.repeat(accuracyModeStats.duffs) : ""
  $("statsShanks").textContent=accuracyModeStats.shanks
@@ -3408,17 +3420,17 @@ function exportHistoryCSV(){
  const emptyPuttColumns=()=>Array(8).fill("")
  pushRow([
   "Session","Date","Club","Distance","Unit","Mode","Wind","Temp","Target ft",
-  "Made","Gimmes","Misses","Missed","Make %","Up and Down %",
+  "Made","Gimmes","Missed","Total Unsuccessful","Make %","Up and Down %",
   ...getTrackerMissCsvHeaders("accuracy","Accuracy"),
   "Center","Off-Center","Flush %",...getTrackerMissCsvHeaders("contact","Contact"),
-  "Best Streak","Duffs","Shanks","Skulls","Total Mis-Hits",
+  "Best Streak","Duffs","Shanks","Skulls","Mis-Hits",
   "Practice Mode","PGA Tour Avg %","Delta vs PGA","Putt Short Left","Putt Long Right","Putt Long Left","Putt Short Right","Total Putts"
  ])
  const exportSessions=loadSessions().slice()
  if(shotHistory.length){
   exportSessions.push(buildSessionSnapshotFromShots(shotHistory))
  }
- const grandChip={made:0,gimmes:0,ringMisses:0,missed:0,duffs:0,shanks:0,skulls:0}
+ const grandChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
  const grandPutt={made:0,missed:0,missDir:createPuttMissDir()}
  exportSessions.forEach((session,index)=>{
   const date=new Date(session.date).toLocaleDateString()
@@ -3439,6 +3451,10 @@ function exportHistoryCSV(){
      const targetFeet=getTargetFeet(distance,mode)
      const accuracyPct=accuracyCount?Math.round((accuracyBucket.made||0)/accuracyCount*100):0
      const contactPct=contactCount?Math.round((contactBucket.made||0)/contactCount*100):0
+     const accuracyMisHits=(accuracyBucket.duffs||0)+(accuracyBucket.shanks||0)+(accuracyBucket.skulls||0)
+     const contactMisHits=(contactBucket.duffs||0)+(contactBucket.shanks||0)+(contactBucket.skulls||0)
+     const accuracyMisses=Math.max(0,(accuracyBucket.missed||0)-accuracyMisHits)
+     const contactMisses=Math.max(0,(contactBucket.missed||0)-contactMisHits)
      TRACKERS.accuracy.missKeys.forEach(key=>{accuracyTotals.missDir[key]+=accuracyBucket.missDir[key]||0})
      TRACKERS.contact.missKeys.forEach(key=>{contactTotals.missDir[key]+=contactBucket.missDir[key]||0})
      accuracyTotals.made+=accuracyBucket.made||0
@@ -3456,13 +3472,13 @@ function exportHistoryCSV(){
      playRows++
      pushRow([
       index+1,date,formatClubLabel(club),distance+"yd","yd",mode==="range"?"Range":"Wedge",windSummary,tempSummary,targetFeet!==""?targetFeet+"ft":"",
-      accuracyBucket.made||0,"","",accuracyBucket.missed||0,accuracyPct+"%",
+      accuracyBucket.made||0,"",accuracyMisses,accuracyBucket.missed||0,accuracyPct+"%",
       mode==="wedge"&&Number.isFinite(Number(getUpAndDownValue(distance,mode)))?formatPercent(getUpAndDownValue(distance,mode))+"%":"",
       ...getTrackerMissCsvValues("accuracy",accuracyBucket.missDir),
-      contactBucket.made||0,contactBucket.missed||0,contactPct+"%",...getTrackerMissCsvValues("contact",contactBucket.missDir),
+      contactBucket.made||0,contactMisses,contactPct+"%",...getTrackerMissCsvValues("contact",contactBucket.missDir),
       targetBestStreak,
       accuracyBucket.duffs||0,accuracyBucket.shanks||0,accuracyBucket.skulls||0,
-      (accuracyBucket.duffs||0)+(accuracyBucket.shanks||0)+(accuracyBucket.skulls||0),
+      accuracyMisHits,
       ...emptyPuttColumns()
      ])
     })
@@ -3475,24 +3491,27 @@ function exportHistoryCSV(){
    const contactModeLabel=getSessionRangeModeLabel(session.contactStats)
    const playModeLabel=getModeLabel(hasRangeLabel(accuracyModeLabel)||hasRangeLabel(contactModeLabel),hasWedgeLabel(accuracyModeLabel)||hasWedgeLabel(contactModeLabel))
    const totalMisHits=accuracyTotals.duffs+accuracyTotals.shanks+accuracyTotals.skulls
+   const totalContactMisHits=contactTotals.duffs+contactTotals.shanks+contactTotals.skulls
+   const accuracyMisses=Math.max(0,accuracyTotals.missed-totalMisHits)
+   const contactMisses=Math.max(0,contactTotals.missed-totalContactMisHits)
    pushRow([
     index+1,date,"ALL","TOTAL","yd",playModeLabel,"","","",
-    accuracyTotals.made,"","",accuracyTotals.missed,accuracyPct+"%","",
-    ...TRACKERS.accuracy.missKeys.map(key=>fmt(accuracyTotals.missDir[key],accuracyTotals.missed?Math.round(accuracyTotals.missDir[key]/accuracyTotals.missed*100):0)),
-    contactTotals.made,contactTotals.missed,contactPct+"%",
-    ...TRACKERS.contact.missKeys.map(key=>fmt(contactTotals.missDir[key],contactTotals.missed?Math.round(contactTotals.missDir[key]/contactTotals.missed*100):0)),
+    accuracyTotals.made,"",accuracyMisses,accuracyTotals.missed,accuracyPct+"%","",
+    ...TRACKERS.accuracy.missKeys.map(key=>fmt(accuracyTotals.missDir[key],accuracyMisses?Math.round(accuracyTotals.missDir[key]/accuracyMisses*100):0)),
+    contactTotals.made,contactMisses,contactPct+"%",
+    ...TRACKERS.contact.missKeys.map(key=>fmt(contactTotals.missDir[key],contactMisses?Math.round(contactTotals.missDir[key]/contactMisses*100):0)),
     playBestStreak,
-    fmt(accuracyTotals.duffs,accuracyTotals.missed?Math.round(accuracyTotals.duffs/accuracyTotals.missed*100):0),
-    fmt(accuracyTotals.shanks,accuracyTotals.missed?Math.round(accuracyTotals.shanks/accuracyTotals.missed*100):0),
-    fmt(accuracyTotals.skulls,accuracyTotals.missed?Math.round(accuracyTotals.skulls/accuracyTotals.missed*100):0),
+    fmt(accuracyTotals.duffs,totalMisHits?Math.round(accuracyTotals.duffs/totalMisHits*100):0),
+    fmt(accuracyTotals.shanks,totalMisHits?Math.round(accuracyTotals.shanks/totalMisHits*100):0),
+    fmt(accuracyTotals.skulls,totalMisHits?Math.round(accuracyTotals.skulls/totalMisHits*100):0),
     fmt(totalMisHits,accuracyTotals.missed?Math.round(totalMisHits/accuracyTotals.missed*100):0),
     ...emptyPuttColumns()
    ])
   }
 
-  const sessionChip={made:0,gimmes:0,ringMisses:0,missed:0,duffs:0,shanks:0,skulls:0}
+  const sessionChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
   ALL_CLUBS.forEach(club=>{
-   const clubChip={made:0,gimmes:0,ringMisses:0,missed:0,duffs:0,shanks:0,skulls:0,best:0}
+   const clubChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0,best:0}
    CHIP_DISTANCES.forEach(distance=>{
     const bucket=session.chipStats[club][distance]
     const made=bucket.made||0
@@ -3503,13 +3522,14 @@ function exportHistoryCSV(){
     const duffs=bucket.duffs||0
     const shanks=bucket.shanks||0
     const skulls=bucket.skulls||0
-    const ringMisses=Math.max(0,missed-duffs-shanks-skulls)
+    const misHits=duffs+shanks+skulls
+    const misses=Math.max(0,missed-misHits)
     const best=getSessionTargetBestStreak(session,"chip",club,distance)
     const pct=Math.round(made/total*100)
     Object.assign(clubChip,{
      made:clubChip.made+made,
      gimmes:clubChip.gimmes+gimmes,
-     ringMisses:clubChip.ringMisses+ringMisses,
+     misses:clubChip.misses+misses,
      missed:clubChip.missed+missed,
      duffs:clubChip.duffs+duffs,
      shanks:clubChip.shanks+shanks,
@@ -3518,7 +3538,7 @@ function exportHistoryCSV(){
     })
     pushRow([
      index+1,date,formatClubLabel(club),distance+"ft","ft","Chip","","",formatPercent(getTargetFeet(distance,"chip")),
-     made,gimmes,ringMisses,missed,pct+"%",formatPercent(getUpAndDownValue(distance,"chip"))+"%",
+     made,gimmes,misses,missed,pct+"%",formatPercent(getUpAndDownValue(distance,"chip"))+"%",
      ...emptyAccuracyAndContact(),
      best,duffs,shanks,skulls,duffs+shanks+skulls,
      ...emptyPuttColumns()
@@ -3530,12 +3550,12 @@ function exportHistoryCSV(){
    const clubMisHits=clubChip.duffs+clubChip.shanks+clubChip.skulls
    pushRow([
     index+1,date,formatClubLabel(club),"TOTAL","ft","Chip","","","",
-    clubChip.made,clubChip.gimmes,clubChip.ringMisses,clubChip.missed,clubPct+"%","",
+    clubChip.made,clubChip.gimmes,clubChip.misses,clubChip.missed,clubPct+"%","",
     ...emptyAccuracyAndContact(),
     clubChip.best,
-    fmt(clubChip.duffs,clubChip.missed?Math.round(clubChip.duffs/clubChip.missed*100):0),
-    fmt(clubChip.shanks,clubChip.missed?Math.round(clubChip.shanks/clubChip.missed*100):0),
-    fmt(clubChip.skulls,clubChip.missed?Math.round(clubChip.skulls/clubChip.missed*100):0),
+    fmt(clubChip.duffs,clubMisHits?Math.round(clubChip.duffs/clubMisHits*100):0),
+    fmt(clubChip.shanks,clubMisHits?Math.round(clubChip.shanks/clubMisHits*100):0),
+    fmt(clubChip.skulls,clubMisHits?Math.round(clubChip.skulls/clubMisHits*100):0),
     fmt(clubMisHits,clubChip.missed?Math.round(clubMisHits/clubChip.missed*100):0),
     ...emptyPuttColumns()
    ])
@@ -3547,12 +3567,12 @@ function exportHistoryCSV(){
    const sessionChipMisHits=sessionChip.duffs+sessionChip.shanks+sessionChip.skulls
    pushRow([
     index+1,date,"ALL","TOTAL","ft","Chip","","","",
-    sessionChip.made,sessionChip.gimmes,sessionChip.ringMisses,sessionChip.missed,sessionChipPct+"%","",
+    sessionChip.made,sessionChip.gimmes,sessionChip.misses,sessionChip.missed,sessionChipPct+"%","",
     ...emptyAccuracyAndContact(),
     "",
-    fmt(sessionChip.duffs,sessionChip.missed?Math.round(sessionChip.duffs/sessionChip.missed*100):0),
-    fmt(sessionChip.shanks,sessionChip.missed?Math.round(sessionChip.shanks/sessionChip.missed*100):0),
-    fmt(sessionChip.skulls,sessionChip.missed?Math.round(sessionChip.skulls/sessionChip.missed*100):0),
+    fmt(sessionChip.duffs,sessionChipMisHits?Math.round(sessionChip.duffs/sessionChipMisHits*100):0),
+    fmt(sessionChip.shanks,sessionChipMisHits?Math.round(sessionChip.shanks/sessionChipMisHits*100):0),
+    fmt(sessionChip.skulls,sessionChipMisHits?Math.round(sessionChip.skulls/sessionChipMisHits*100):0),
     fmt(sessionChipMisHits,sessionChip.missed?Math.round(sessionChipMisHits/sessionChip.missed*100):0),
     ...emptyPuttColumns()
    ])
@@ -3567,7 +3587,7 @@ function exportHistoryCSV(){
    const pga=PUTT_PGA_TOUR_AVG[distance]
    pushRow([
     index+1,date,"Putter",distance+"ft","ft","Putt","","","",
-    summary.made,"","",summary.missed,summary.pct+"%","",
+    summary.made,"",summary.missed,summary.missed,summary.pct+"%","",
     ...emptyAccuracyAndContact(),
     summarizeShotSequence(distanceShots).best,"","","","",
     "",pga+"%",(summary.pct-pga)+"%",
@@ -3580,7 +3600,7 @@ function exportHistoryCSV(){
    const best=practiceLabel==="RANDOM"?summarizeShotSequence(putts).best:""
    pushRow([
     index+1,date,"Putter","ALL","ft","Putt","","","",
-    summary.made,"","",summary.missed,summary.pct+"%","",
+    summary.made,"",summary.missed,summary.missed,summary.pct+"%","",
     ...emptyAccuracyAndContact(),
     best,"","","","",
     practiceLabel,"","",
@@ -3607,12 +3627,12 @@ function exportHistoryCSV(){
   const grandChipMisHits=grandChip.duffs+grandChip.shanks+grandChip.skulls
   pushRow([
    "GRAND TOTAL","","ALL","ALL","ft","Chip","","","",
-   grandChip.made,grandChip.gimmes,grandChip.ringMisses,grandChip.missed,grandChipPct+"%","",
+   grandChip.made,grandChip.gimmes,grandChip.misses,grandChip.missed,grandChipPct+"%","",
    ...emptyAccuracyAndContact(),
    "",
-   fmt(grandChip.duffs,grandChip.missed?Math.round(grandChip.duffs/grandChip.missed*100):0),
-   fmt(grandChip.shanks,grandChip.missed?Math.round(grandChip.shanks/grandChip.missed*100):0),
-   fmt(grandChip.skulls,grandChip.missed?Math.round(grandChip.skulls/grandChip.missed*100):0),
+   fmt(grandChip.duffs,grandChipMisHits?Math.round(grandChip.duffs/grandChipMisHits*100):0),
+   fmt(grandChip.shanks,grandChipMisHits?Math.round(grandChip.shanks/grandChipMisHits*100):0),
+   fmt(grandChip.skulls,grandChipMisHits?Math.round(grandChip.skulls/grandChipMisHits*100):0),
    fmt(grandChipMisHits,grandChip.missed?Math.round(grandChipMisHits/grandChip.missed*100):0),
    ...emptyPuttColumns()
   ])
@@ -3622,7 +3642,7 @@ function exportHistoryCSV(){
   const grandPuttPct=Math.round(grandPutt.made/grandPuttTotal*100)
   pushRow([
    "GRAND TOTAL","","Putter","ALL","ft","Putt","","","",
-   grandPutt.made,"","",grandPutt.missed,grandPuttPct+"%","",
+   grandPutt.made,"",grandPutt.missed,grandPutt.missed,grandPuttPct+"%","",
    ...emptyAccuracyAndContact(),
    "","","","","",
    "COMBINED","","",
@@ -3715,15 +3735,15 @@ function renderHistory(){
   let summaryHtml="<strong>Session Totals</strong>"
   if(accuracyTotals.total){
    summaryHtml+=
-    '<br><span class="subtle"><strong>Range / Wedge:</strong> Made: '+accuracyTotals.made+' | Missed: '+accuracyTotals.missed+'</span>'+
-    '<br><span class="subtle">Center: '+contactTotals.made+' | Off-Center: '+contactTotals.missed+'</span>'+
+    '<br><span class="subtle"><strong>Range / Wedge:</strong> Made: '+accuracyTotals.made+' | Missed: '+accuracyTotals.misses+' | Mis-Hits: '+accuracyTotals.misHits+'</span>'+
+    '<br><span class="subtle">Center: '+contactTotals.made+' | Off-Center: '+contactTotals.misses+'</span>'+
     '<br><span class="subtle">Make %: '+accuracyTotals.pct+'% | Flush %: '+contactTotals.pct+'%</span>'+
-    '<br><span class="subtle">Duffs: '+accuracyTotals.duffs+' | Shanks: '+accuracyTotals.shanks+' | Skulls: '+accuracyTotals.skulls+'</span>'
+    '<br><span class="subtle">Mis-Hits - Duffs: '+accuracyTotals.duffs+' | Shanks: '+accuracyTotals.shanks+' | Skulls: '+accuracyTotals.skulls+'</span>'
   }
   if(chipTotals.total){
    summaryHtml+=
-    '<br><span class="subtle"><strong>Chip:</strong> Made: '+chipTotals.made+' | Gimmes: '+chipTotals.gimmes+' | Ring Misses: '+chipTotals.ringMisses+' | Missed: '+chipTotals.missed+'</span>'+
-     '<br><span class="subtle">Make %: '+chipTotals.pct+'% | Duffs: '+chipTotals.duffs+' | Shanks: '+chipTotals.shanks+' | Skulls: '+chipTotals.skulls+'</span>'
+    '<br><span class="subtle"><strong>Chip:</strong> Made: '+chipTotals.made+' | Gimmes: '+chipTotals.gimmes+' | Missed: '+chipTotals.misses+' | Mis-Hits: '+chipTotals.misHits+'</span>'+
+     '<br><span class="subtle">Make %: '+chipTotals.pct+'% | Mis-Hits - Duffs: '+chipTotals.duffs+' | Shanks: '+chipTotals.shanks+' | Skulls: '+chipTotals.skulls+'</span>'
   }
   if(puttTotals.total){
    summaryHtml+=
@@ -3745,6 +3765,10 @@ function renderHistory(){
      row.className="history-block"
      const accuracyPct=accuracyCount?Math.round((accuracyBucket.made||0)/accuracyCount*100):0
      const contactPct=contactCount?Math.round((contactBucket.made||0)/contactCount*100):0
+     const accuracyMisHits=(accuracyBucket.duffs||0)+(accuracyBucket.shanks||0)+(accuracyBucket.skulls||0)
+     const contactMisHits=(contactBucket.duffs||0)+(contactBucket.shanks||0)+(contactBucket.skulls||0)
+     const accuracyMisses=Math.max(0,(accuracyBucket.missed||0)-accuracyMisHits)
+     const contactMisses=Math.max(0,(contactBucket.missed||0)-contactMisHits)
      const windSummary=mode==="range" ? getRangeWindSummary(session.shots,club,distance) : ""
      const tempSummary=mode==="range" ? getRangeTempSummary(session.shots,club,distance) : ""
      const targetFeetLabel=formatTargetFeetLabel(distance,mode)
@@ -3756,11 +3780,11 @@ function renderHistory(){
       (mode==="wedge"
        ? '<br><span class="subtle">Up and Down: '+formatPercent(upAndDown)+(hasUpAndDown?"%":"")+'</span>'
        : '<br><span class="subtle">Wind: '+(windSummary||"Not recorded")+' | Temp: '+(tempSummary||"Not recorded")+'</span>')+
-      '<br><span class="subtle">Accuracy: '+(accuracyBucket.made||0)+'/'+accuracyCount+' ('+accuracyPct+'%)</span>'+
+      '<br><span class="subtle">Accuracy: '+(accuracyBucket.made||0)+'/'+accuracyCount+' ('+accuracyPct+'%) | Missed: '+accuracyMisses+'</span>'+
       '<br><span class="subtle">'+formatTrackerMissSummary("accuracy",accuracyBucket.missDir)+'</span>'+
-      '<br><span class="subtle">Contact: '+(contactBucket.made||0)+'/'+contactCount+' ('+contactPct+'%)</span>'+
+      '<br><span class="subtle">Contact: '+(contactBucket.made||0)+'/'+contactCount+' ('+contactPct+'%) | Off-Center: '+contactMisses+'</span>'+
       '<br><span class="subtle">'+formatTrackerMissSummary("contact",contactBucket.missDir)+'</span>'+
-      '<br><span class="subtle">Mishits - Duffs: '+(accuracyBucket.duffs||0)+' | Shanks: '+(accuracyBucket.shanks||0)+' | Skulls: '+(accuracyBucket.skulls||0)+'</span>'
+      '<br><span class="subtle">Mis-Hits: '+accuracyMisHits+' - Duffs: '+(accuracyBucket.duffs||0)+' | Shanks: '+(accuracyBucket.shanks||0)+' | Skulls: '+(accuracyBucket.skulls||0)+'</span>'
      accordion.appendChild(row)
     })
    })
@@ -3789,12 +3813,13 @@ function renderHistory(){
     const upAndDown=getUpAndDownValue(distance,"chip")
     const earnedMark=pct>upAndDown ? " *" : ""
     const best=getSessionTargetBestStreak(session,"chip",club,distance)
-    const ringMisses=Math.max(0,(bucket.missed||0)-(bucket.duffs||0)-(bucket.shanks||0)-(bucket.skulls||0))
+    const misHits=(bucket.duffs||0)+(bucket.shanks||0)+(bucket.skulls||0)
+    const misses=Math.max(0,(bucket.missed||0)-misHits)
     const row=document.createElement("div")
     row.className="history-block"
     row.innerHTML="<strong>"+formatClubLabel(club)+" - "+distance+"ft (Chip):</strong> "+(bucket.made||0)+"/"+total+" ("+pct+"%) - "+formatPercent(getTargetFeet(distance,"chip"))+"ft"+earnedMark+
-     '<br><span class="subtle">Up and Down: '+formatPercent(upAndDown)+'% | Gimmes: '+(bucket.gimmes||0)+' | Ring Misses: '+ringMisses+' | Missed: '+(bucket.missed||0)+'</span>'+
-     '<br><span class="subtle">Duffs: '+(bucket.duffs||0)+' | Shanks: '+(bucket.shanks||0)+' | Skulls: '+(bucket.skulls||0)+' | Best Streak: '+best+'</span>'
+     '<br><span class="subtle">Up and Down: '+formatPercent(upAndDown)+'% | Gimmes: '+(bucket.gimmes||0)+' | Missed: '+misses+' | Mis-Hits: '+misHits+'</span>'+
+     '<br><span class="subtle">Mis-Hits - Duffs: '+(bucket.duffs||0)+' | Shanks: '+(bucket.shanks||0)+' | Skulls: '+(bucket.skulls||0)+' | Best Streak: '+best+'</span>'
     accordion.appendChild(row)
    })
   })
