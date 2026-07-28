@@ -425,7 +425,8 @@ function migrateLegacyStorage(){
   })
  }catch{}
 }
-const EMOJI={
+const EMOJI_STORAGE_KEY=APP_STORAGE_PREFIX+"_emojiSettings"
+const EMOJI_DEFAULTS=Object.freeze({
  duff:"\u{1F4A9}",
  shank:"\u{1F92C}",
  skull:"\u{1F480}",
@@ -450,7 +451,30 @@ const EMOJI={
  medal:"\u{1F947}",
  star:"\u2B50",
  delete:"\u{1F5D1}\uFE0F"
+})
+function normalizeEmojiSettings(saved){
+ const source=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{}
+ const normalized={}
+ Object.keys(EMOJI_DEFAULTS).forEach(key=>{
+  normalized[key]=typeof source[key]==="string"&&source[key].length ? source[key] : EMOJI_DEFAULTS[key]
+ })
+ Object.keys(source).forEach(key=>{
+  if(!(key in normalized)&&typeof source[key]==="string"&&source[key].length) normalized[key]=source[key]
+ })
+ return normalized
 }
+function loadEmojiSettings(){
+ let saved=null
+ try{
+  const current=localStorage.getItem(EMOJI_STORAGE_KEY)
+  const legacy=localStorage.getItem(LEGACY_STORAGE_PREFIX+"_emojiSettings")
+  saved=JSON.parse(current!==null?current:legacy)
+ }catch{}
+ const normalized=normalizeEmojiSettings(saved)
+ try{localStorage.setItem(EMOJI_STORAGE_KEY,JSON.stringify(normalized))}catch{}
+ return Object.freeze(normalized)
+}
+const EMOJI=loadEmojiSettings()
 const BASE_CLUBS=["62 deg","60 deg","58 deg","56 deg","54 deg","52 deg","UW","48 deg","PW","9i","8i","7i","6i","5i","4i","3i","5h","4h","3h","9w","7w","5w","4w","3w","Driver"]
 const WEDGE_CLUBS=["62 deg","60 deg","58 deg","56 deg","54 deg","52 deg","UW","48 deg","PW"]
 const IRON_CLUBS=["9i","8i","7i","6i","5i","4i","3i"]
