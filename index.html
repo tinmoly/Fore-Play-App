@@ -3835,7 +3835,7 @@ function renderHistory(){
     if(!total) return
     const pct=Math.round((bucket.made||0)/total*100)
     const upAndDown=getUpAndDownValue(distance,"chip")
-    const earnedMark=pct>upAndDown ? " *" : ""
+    const earnedMark=pct>upAndDown ? " ⭐" : ""
     const best=getSessionTargetBestStreak(session,"chip",club,distance)
     const misHits=(bucket.duffs||0)+(bucket.shanks||0)+(bucket.skulls||0)
     const misses=Math.max(0,(bucket.missed||0)-misHits)
