@@ -492,7 +492,7 @@ const PUTT_DISTANCES=[
  ...Array.from({length:9},(_,i)=>2+i),
  ...Array.from({length:7},(_,i)=>12+i*2),
  ...Array.from({length:7},(_,i)=>27+i*3),
- 50,55,60
+  50,55,60,65,70,75
 ]
 const PUTT_STAT_DISTANCES=Array.from(new Set([...PUTT_DISTANCES,15,25])).sort((a,b)=>a-b)
 const RANGE_DISTANCE_MIN=RANGE_DISTANCES[0]
@@ -2461,7 +2461,7 @@ function renderPuttDistanceSetupPanel(panel){
  const displayDistances=getPuttDistanceSetupDisplayOptions()
  const copy=document.createElement("div")
  copy.className="setup-copy"
- copy.textContent="Show or hide putting distances from 2 feet through 60 feet: 1-foot increments to 10 feet, 2-foot increments to 24 feet, 3-foot increments to 45 feet, then 5-foot increments to 60 feet."
+  copy.textContent="Show or hide putting distances from 2 feet through 75 feet: 1-foot increments to 10 feet, 2-foot increments to 24 feet, 3-foot increments to 45 feet, then 5-foot increments to 75 feet."
  const toolbar=document.createElement("div")
  toolbar.className="setup-toolbar"
  const showAllButton=document.createElement("button")
