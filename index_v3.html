@@ -181,15 +181,21 @@ h1{font-size:34px;letter-spacing:.04em}
 .putt-miss-bottomleft{clip-path:polygon(50% 50%,100% 100%,0% 100%)}
 .putt-miss-topleft{clip-path:polygon(50% 50%,0% 100%,0% 0%)}
 .putt-miss-bottomright{clip-path:polygon(50% 50%,100% 0%,100% 100%)}
-.putt-label-top,.putt-label-bottom,.putt-label-left,.putt-label-right{position:absolute;font-weight:800;color:#000;font-size:24px;line-height:1.05;z-index:5;pointer-events:none;text-align:center}
-.putt-label-top{top:10px;left:50%;transform:translateX(-50%)}
-.putt-label-bottom{bottom:10px;left:50%;transform:translateX(-50%)}
-.putt-label-left{left:10px;top:50%;transform:translateY(-50%) rotate(-90deg)}
-.putt-label-right{right:10px;top:50%;transform:translateY(-50%) rotate(270deg)}
-.putt-made{width:110px;height:110px;border-radius:50%;border:none;background:#2ecc71;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#000;box-shadow:3px 0 0 #1e9e54,0 3px 0 #1e9e54,0 10px 20px rgba(0,0,0,.35);border-bottom:3px solid #1e9e54;border-right:3px solid #1e9e54;cursor:pointer;text-align:center;line-height:1.1;position:absolute;top:50%;left:50%;transform:translate(calc(-50% - 4px),-52%) rotate(-45deg);z-index:6}
-.putt-made:active{transform:translate(calc(-50% - 4px),-52%) rotate(-45deg) translateY(3px) scale(.97);box-shadow:1px 0 0 #1e9e54,0 1px 0 #1e9e54,0 6px 12px rgba(0,0,0,.35)}
+ .putt-label-top,.putt-label-bottom,.putt-label-left,.putt-label-right{position:absolute;font-weight:800;color:#000;font-size:21.6px;line-height:1.05;z-index:5;pointer-events:none;text-align:center}
+.putt-label-top{top:0;left:50%;transform:translateX(-50%)}
+.putt-label-bottom{bottom:0;left:50%;transform:translateX(-50%)}
+.putt-label-left{left:0;top:50%;transform:translateY(-50%) rotate(-90deg)}
+.putt-label-right{right:0;top:50%;transform:translateY(-50%) rotate(270deg)}
+.putt-made{width:110px;height:110px;border-radius:50%;border:none;background:#2ecc71;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#000;box-shadow:3px 0 0 #1e9e54,0 3px 0 #1e9e54,0 10px 20px rgba(0,0,0,.35);border-bottom:3px solid #1e9e54;border-right:3px solid #1e9e54;cursor:pointer;text-align:center;line-height:1.1;position:absolute;top:50%;left:50%;transform:translate(calc(-50% - 4px),-52%) rotate(-45deg);z-index:6}
+.putt-made-label{display:block;transform:translateY(0)}
+ .putt-made:active{transform:translate(calc(-50% - 4px),-52%) rotate(-45deg) translateY(3px) scale(.97);box-shadow:1px 0 0 #1e9e54,0 1px 0 #1e9e54,0 6px 12px rgba(0,0,0,.35)}
+ .putt-ring.lag-enabled .putt-made{width:82.5px;height:82.5px;font-size:22px}
+ .putt-ring.lag-enabled .putt-made:active{transform:translate(calc(-50% - 4px),-52%) rotate(-45deg) translateY(3px) scale(.97)}
+ .putt-lag-ring{width:min(180px,72%);height:auto;aspect-ratio:1/1;border:8px solid #fff;border-radius:50%;background:#fff;color:#000;cursor:pointer;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);z-index:5;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 8px 18px rgba(0,0,0,.25);padding:0}
+ .putt-lag-ring:active{transform:translate(-50%,-50%) rotate(-45deg) scale(.97);filter:brightness(.92)}
+ .putt-lag-label{position:absolute;bottom:calc(10% - 1.05em);left:50%;transform:translate(-50%,3px);white-space:nowrap;font-size:16px;font-weight:800;line-height:1.05;color:#000;pointer-events:none;text-align:center}
 
-button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.contact-wedge):not(.chip-target-ring):not(.chip-gimme):not(.putt-miss-wedge):not(.putt-made){transform:translateY(3px) scale(.98);box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
+ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.contact-wedge):not(.chip-target-ring):not(.chip-gimme):not(.putt-miss-wedge):not(.putt-made):not(.putt-lag-ring){transform:translateY(3px) scale(.98);box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
 
 .stats{text-align:center;font-size:18px;margin-top:16px}
 .stats p{margin:6px 0}
@@ -333,7 +339,7 @@ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.c
 <div class="chip-shot-ring">
 <button class="chip-target-ring chip-outer-ring" type="button" aria-label="Missed chip" onclick="recordChipMissed()"></button>
 <button class="chip-target-ring chip-inner-ring" type="button" aria-label="Made chip" onclick="recordChipMade()"></button>
-<button class="chip-gimme" type="button" aria-label="Gimme chip" onclick="recordChipGimme()">Gimme<span class="chip-gimme-subtext">(2ft)</span></button>
+<button class="chip-gimme" type="button" aria-label="Gimme chip" onclick="recordChipGimme()">GIMME<span id="chipGimmeSubtext" class="chip-gimme-subtext">(2ft)</span></button>
 <div id="chipRingTargetDistance" class="chip-ring-target-distance">6ft</div>
 <div id="chipOuterRingTargetDistance" class="chip-outer-ring-target-distance">12ft</div>
 </div>
@@ -349,7 +355,8 @@ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.c
 <span class="putt-label-bottom">Short<br>Left</span>
 <span class="putt-label-left">Long<br>Left</span>
 <span class="putt-label-right">Short<br>Right</span>
-<button class="putt-made" type="button" aria-label="Made putt" onclick="recordPuttMade()">Made</button>
+ <button id="puttLagRing" class="putt-lag-ring mode-hidden" type="button" aria-label="Lag Putt" onclick="recordLagPutt()"><span id="puttLagLabel" class="putt-lag-label">Lag Putt:<br>2 ft</span></button>
+ <button class="putt-made" type="button" aria-label="Made putt" onclick="recordPuttMade()"><span class="putt-made-label">MADE</span></button>
 </div>
 </div>
 
@@ -383,9 +390,9 @@ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.c
 <div id="puttStatsPanel" class="stats-panel mode-hidden">
 <div class="stats combined-stats">
 <p>&#x2705; Made: <span id="puttStatsMade">0</span> | &#x26D4; Missed: <span id="puttStatsMissed">0</span></p>
-<p>&#x1F6A9; Make %: <span id="puttStatsMakePercent">0</span>%</p>
+ <p>&#x1F6A9; Make %: <span id="puttStatsMakePercent">0</span>%</p>
+<p>&#x26F3; Lag: <span id="puttStatsLagPutts">0</span> | Lag Putt %: <span id="puttStatsLagPuttPercent">0</span>%</p>
 <p><span id="puttStatsStreakTitle">Streak</span>: <span id="puttStatsStreak">0</span> <span id="puttStatsStreakLabel"></span></p>
-<p id="puttBestStreakRow" class="mode-hidden">Best Streak: <span id="puttStatsBestStreak">0</span></p>
 </div>
 </div>
 
@@ -487,14 +494,15 @@ const WEDGE_DISTANCES=ALL_DISTANCE_OPTIONS.slice()
 const RANGE_CLUBS=ALL_CLUBS.slice()
 const RANGE_MANUAL_CLUBS=ALL_CLUBS.slice()
 const RANGE_DISTANCES=ALL_DISTANCE_OPTIONS.slice()
-const CHIP_DISTANCES=Array.from({length:27},(_,i)=>12+i*3)
+const CHIP_DISTANCES=Array.from({length:37},(_,i)=>12+i*3)
 const PUTT_DISTANCES=[
  ...Array.from({length:9},(_,i)=>2+i),
  ...Array.from({length:7},(_,i)=>12+i*2),
  ...Array.from({length:7},(_,i)=>27+i*3),
-  50,55,60,65,70,75
+ 50,55,60,65,70,75
 ]
-const PUTT_STAT_DISTANCES=Array.from(new Set([...PUTT_DISTANCES,15,25])).sort((a,b)=>a-b)
+const PUTT_LAG_DISTANCES=PUTT_DISTANCES.filter(distance=>distance>=20).map(distance=>Math.round(distance/10))
+const PUTT_STAT_DISTANCES=Array.from(new Set([...PUTT_DISTANCES,15,25,...PUTT_LAG_DISTANCES])).sort((a,b)=>a-b)
 const RANGE_DISTANCE_MIN=RANGE_DISTANCES[0]
 const RANGE_DISTANCE_MAX=RANGE_DISTANCES[RANGE_DISTANCES.length-1]
 const CHIP_DISTANCE_MIN=CHIP_DISTANCES[0]
@@ -662,6 +670,7 @@ let pendingShot={accuracy:null,contact:null}
 let activeSetupPanel=""
 let lastSetupPanelViewportWidth=0
 let puttTapLocked=false
+let pendingLagPuttRestoreDistance=null
 let defaultConfirmationTimer=0
 const PUTT_TAP_DELAY=300
 
@@ -821,6 +830,18 @@ function normalizePuttDistanceSetupValue(value,fallback){
  const numeric=Number(value)
  if(!Number.isFinite(numeric)) return fallback
  return getClosestDistanceOption(Math.max(PUTT_DISTANCE_MIN,Math.min(PUTT_DISTANCE_MAX,numeric)),PUTT_DISTANCES)
+}
+function normalizePuttDistanceStepperValue(value,current,fallback){
+ const numeric=Number(value)
+ if(!Number.isFinite(numeric)) return fallback
+ const bounded=Math.max(PUTT_DISTANCE_MIN,Math.min(PUTT_DISTANCE_MAX,numeric))
+ if(PUTT_DISTANCES.includes(bounded)) return bounded
+ const currentNumeric=Number(current)
+ if(bounded>=currentNumeric){
+  return PUTT_DISTANCES.find(distance=>distance>bounded)||PUTT_DISTANCE_MAX
+ }
+ const previous=PUTT_DISTANCES.filter(distance=>distance<bounded).pop()
+ return previous===undefined ? PUTT_DISTANCE_MIN : previous
 }
 function normalizePuttDistanceSetupRange(saved,fallback=DEFAULT_PUTT_DISTANCE_SETUP_RANGE){
  const safeFallback=fallback&&typeof fallback==="object"?fallback:DEFAULT_PUTT_DISTANCE_SETUP_RANGE
@@ -1129,7 +1150,7 @@ function buildPuttPgaTourAverage(){
  const anchors=Object.keys(PUTT_PGA_TOUR_BASE_AVG).map(Number).sort((a,b)=>a-b)
  const last=anchors[anchors.length-1]
  const previous=anchors[anchors.length-2]
- PUTT_DISTANCES.forEach(distance=>{
+ PUTT_STAT_DISTANCES.forEach(distance=>{
   if(projected[distance]!==undefined) return
   const lower=anchors.filter(value=>value<distance).pop()
   const upper=anchors.find(value=>value>distance)
@@ -1255,7 +1276,7 @@ function createChipStatBucket(){return {made:0,missed:0,gimmes:0,duffs:0,shanks:
 function createChipDistanceMap(factory){const map={};CHIP_DISTANCES.forEach(distance=>{map[distance]=factory()});return map}
 function createChipClubDistanceMap(factory){const map={};ALL_CLUBS.forEach(club=>{map[club]=createChipDistanceMap(factory)});return map}
 function createPuttMissDir(){return {shortLeft:0,longRight:0,longLeft:0,shortRight:0}}
-function createPuttStatBucket(){return {made:0,missed:0,missDir:createPuttMissDir()}}
+function createPuttStatBucket(){return {made:0,missed:0,lagMade:0,missDir:createPuttMissDir()}}
 function createPuttDistanceMap(factory){const map={};PUTT_STAT_DISTANCES.forEach(distance=>{map[distance]=factory()});return map}
 function ensureChipStatsShape(obj){
  const map=createChipClubDistanceMap(createChipStatBucket)
@@ -1288,7 +1309,7 @@ function ensurePuttStatsShape(obj){
   const bucket=obj[distance]||{}
   const missDir=createPuttMissDir()
   Object.keys(missDir).forEach(key=>{missDir[key]=Number(bucket.missDir&&bucket.missDir[key])||0})
-  map[distance]={made:Number(bucket.made)||0,missed:Number(bucket.missed)||0,missDir}
+   map[distance]={made:Number(bucket.made)||0,missed:Number(bucket.missed)||0,lagMade:Number(bucket.lagMade)||0,missDir}
  })
  return map
 }
@@ -1733,6 +1754,7 @@ function updatePendingVisuals(){
 }
 function clearPendingSelections(){pendingShot={accuracy:null,contact:null};updatePendingVisuals()}
 function resetLiveTrackingState(){
+ pendingLagPuttRestoreDistance=null
  TRACKER_KEYS.forEach(trackerKey=>{
    statsMapByTracker[trackerKey]=defaultStats(trackerKey)
    streaksByTracker[trackerKey]=defaultCounters()
@@ -1796,16 +1818,19 @@ function summarizeChipShotResults(history){
  return {made,misses,missed,misHits,gimmes,duffs,shanks,skulls,total:made+missed}
 }
 function summarizePuttShotResults(history){
- let made=0,missed=0
+ let made=0,missed=0,lagMade=0
  const missDir=createPuttMissDir()
  history.forEach(shot=>{
   const result=shot&&shot.putt
   if(!result) return
-  if(result.type==="made"){made++;return}
+   if(result.type==="made"){made++;return}
+   if(result.type==="lagMade"){lagMade++;return}
   missed++
   if(result.dir&&result.dir in missDir) missDir[result.dir]++
  })
- return {made,missed,missDir,total:made+missed,pct:made+missed?Math.round(made/(made+missed)*100):0}
+ const total=made+missed
+ const totalPutts=total+lagMade
+ return {made,missed,lagMade,lagPutts:lagMade,missDir,total,totalWithLag:totalPutts,pct:total?Math.round(made/total*100):0,lagPct:totalPutts?Math.round(lagMade/totalPutts*100):0}
 }
 function isPerfectShot(shot){
  if(getShotTargetMode(shot)==="chip") return isMadeChipType(shot&&shot.chip&&shot.chip.type)
@@ -1842,16 +1867,18 @@ function summarizeChipStats(statsMap){
  return {made,misses,missed,misHits,gimmes,duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
 }
 function summarizePuttStats(statsMap){
- let made=0,missed=0
+ let made=0,missed=0,lagMade=0
  const missDir=createPuttMissDir()
  PUTT_STAT_DISTANCES.forEach(distance=>{
   const bucket=statsMap&&statsMap[distance]||{}
-  made+=bucket.made||0
-  missed+=bucket.missed||0
+   made+=bucket.made||0
+   missed+=bucket.missed||0
+   lagMade+=bucket.lagMade||0
   Object.keys(missDir).forEach(key=>{missDir[key]+=Number(bucket.missDir&&bucket.missDir[key])||0})
  })
  const total=made+missed
- return {made,missed,missDir,total,pct:total?Math.round(made/total*100):0}
+ const totalPutts=total+lagMade
+ return {made,missed,lagMade,lagPutts:lagMade,missDir,total,totalWithLag:totalPutts,pct:total?Math.round(made/total*100):0,lagPct:totalPutts?Math.round(lagMade/totalPutts*100):0}
 }
 function summarizeSessionTracker(session,trackerKey){
  const statsMap=trackerKey==="accuracy" ? session.accuracyStats : session.contactStats
@@ -1887,7 +1914,7 @@ function getSessionBestStreak(session){
 }
 function getSessionTargetBestStreak(session,mode,club,distance){
  if(Array.isArray(session.shots)&&session.shots.length){
-  const targetShots=session.shots.filter(shot=>getShotTargetMode(shot)===mode&&shot.club===club&&shot.distance===distance)
+  const targetShots=session.shots.filter(shot=>getShotTargetMode(shot)===mode&&(mode==="putt"||shot.club===club)&&shot.distance===distance)
   const sequenceBest=summarizeShotSequence(targetShots).best
   const legacyBest=targetShots.reduce((best,shot)=>Math.max(best,Number(shot&&shot.legacyBestStreak)||0),0)
   return Math.max(sequenceBest,legacyBest)
@@ -2156,7 +2183,7 @@ function toggleAllPuttDistances(distances=getPuttDistanceSetupDisplayOptions()){
  applyPuttDistanceVisibilityMap(next)
 }
 function updatePuttDistanceSetupRange(type,value){
- const nextValue=normalizePuttDistanceSetupValue(value,puttDistanceSetupRange[type])
+ const nextValue=normalizePuttDistanceStepperValue(value,puttDistanceSetupRange[type],puttDistanceSetupRange[type])
  const nextRange={...puttDistanceSetupRange,[type]:nextValue}
  if(type==="min"&&nextRange.min>nextRange.max) nextRange.max=nextRange.min
  if(type==="max"&&nextRange.max<nextRange.min) nextRange.min=nextRange.max
@@ -2637,6 +2664,23 @@ function handleWindowResize(){
  if(Math.abs(nextViewportWidth-lastSetupPanelViewportWidth)<2) return
  renderSetupPanel()
 }
+function formatLagPuttDistance(distance){
+ const value=getLagPuttDistance(distance)
+ return Number.isInteger(value)?String(value):value.toFixed(1)
+}
+function getLagPuttDistance(distance){return Math.round(Number(distance)/10)}
+function updatePuttLagRing(){
+ const ring=$("puttLagRing")
+ const puttRing=document.querySelector(".putt-ring")
+ const label=$("puttLagLabel")
+ const enabled=isPuttMode()&&Number(currentDistance)>=20
+ if(ring) {
+  ring.classList.toggle("mode-hidden",!enabled)
+  ring.setAttribute("aria-label",enabled?"Lag Putt: "+formatLagPuttDistance(currentDistance)+" ft":"Lag Putt")
+ }
+ if(label) label.innerHTML="Lag Putt:<br>"+formatLagPuttDistance(currentDistance)+" ft"
+ if(puttRing) puttRing.classList.toggle("lag-enabled",enabled)
+}
 function renderPracticeMode(){
  const btn=$("practiceModeBtn")
  const target=$("modeTarget")
@@ -2670,10 +2714,12 @@ function renderPracticeMode(){
  const undoButton=$("undoBtn")
  if(undoButton) undoButton.textContent=EMOJI.undo+(chipActive?" Undo Last Chip":puttActive?" Undo Last Putt":" Undo Last Shot")
  if(chipActive){
+  $("chipGimmeSubtext").textContent="("+(currentDistance>=30?3:2)+"ft)"
   const targetFeet=getTargetFeet(currentDistance,"chip")
   $("chipRingTargetDistance").textContent=formatPercent(targetFeet)+"ft"
-  $("chipOuterRingTargetDistance").textContent=formatPercent(targetFeet*2)+"ft"
- }
+   $("chipOuterRingTargetDistance").textContent=formatPercent(targetFeet*2)+"ft"
+  }
+  updatePuttLagRing()
 }
 function buildClubRow(){
  const r=$("clubRow")
@@ -2796,7 +2842,7 @@ function buildDistanceRow(){
   const b=document.createElement("button")
   const puttRandom=isPuttMode()&&getActivePracticeMode()==="random"
   b.className="pill-btn"+(puttRandom?" putt-random":"")+(d===currentDistance?" active":"")
-  b.textContent=formatShotDistance(d,mode)
+  b.textContent=mode==="chip"?formatChipDistanceSetupLabel(d):formatShotDistance(d,mode)
   if(puttRandom){
    b.disabled=true
    b.title="Random Mode selects the next putting distance automatically."
@@ -2804,7 +2850,7 @@ function buildDistanceRow(){
   r.appendChild(b)
  })
 }
-function syncCurrentSelection(){setTitle();buildClubRow();buildDistanceRow();clearPendingSelections();updateStats();renderPracticeMode();persistLiveState()}
+function syncCurrentSelection(){pendingLagPuttRestoreDistance=null;setTitle();buildClubRow();buildDistanceRow();clearPendingSelections();updateStats();renderPracticeMode();persistLiveState()}
 function setClub(club){
  currentClub=club
  if(isRangeMode()){
@@ -2859,14 +2905,16 @@ function pickRandomRangeDistance(){
  rangeSelections.random.club=currentClub
  syncCurrentSelection()
 }
-function pickRandomTarget(){
+function pickRandomTarget(excludedDistance=null){
  if(isRangeMode()){pickRandomRangeDistance();return}
  if(isPuttMode()){
   const distances=getSelectableDistances("putt")
   if(!distances.length) return
-  let next=currentDistance
-  if(distances.length===1) next=distances[0]
-  else while(next===currentDistance){next=distances[Math.floor(Math.random()*distances.length)]}
+  const excluded=Number.isFinite(Number(excludedDistance))?Number(excludedDistance):null
+  const available=excluded===null?distances:distances.filter(distance=>distance!==excluded)
+  const candidates=available.filter(distance=>distance!==currentDistance)
+  const next=candidates.length?candidates[Math.floor(Math.random()*candidates.length)]:available[0]
+  if(next===undefined) return
   setTarget("Putter",next)
   return
  }
@@ -2968,11 +3016,11 @@ function buildChipShotPayload(type){
   chip:{type}
  }
 }
-function buildPuttShotPayload(type,dir){
+function buildPuttShotPayload(type,dir,distance=currentDistance){
  return {
   id:String(Date.now())+"-"+Math.random().toString(36).slice(2),
   club:"Putter",
-  distance:currentDistance,
+  distance,
   mode:getActivePracticeMode(),
   targetSetMode:"putt",
   windSpeed:null,
@@ -3011,8 +3059,9 @@ function applyChipResultToStatsMap(statsMap,result,club,distance){
 function applyPuttResultToStatsMap(statsMap,result,distance){
  if(!result||!statsMap||!statsMap[distance]) return
  const bucket=statsMap[distance]
- if(result.type==="made"){bucket.made++;return}
- bucket.missed++
+  if(result.type==="made"){bucket.made++;return}
+  if(result.type==="lagMade"){bucket.lagMade=(bucket.lagMade||0)+1;return}
+  bucket.missed++
  if(result.dir&&result.dir in bucket.missDir) bucket.missDir[result.dir]++
 }
 function removeShotResultFromTracker(trackerKey,result,mode,club,distance){
@@ -3103,7 +3152,7 @@ function hasTrackedSessionData(){
   return !!((bucket.made||0)||(bucket.missed||0)||(bucket.gimmes||0)||(bucket.duffs||0)||(bucket.shanks||0)||(bucket.skulls||0))
  }))||PUTT_STAT_DISTANCES.some(distance=>{
   const bucket=puttStats[distance]
-  return !!((bucket.made||0)||(bucket.missed||0))
+   return !!((bucket.made||0)||(bucket.missed||0)||(bucket.lagMade||0))
  })
 }
 function buildCurrentSessionSnapshot(){
@@ -3149,14 +3198,14 @@ function commitChipShot(type){
  advancePracticeTarget()
  updateStats()
 }
-function commitPutt(type,dir){
- const shot=buildPuttShotPayload(type,dir)
+function commitPutt(type,dir,distance=currentDistance,advance=true,excludedDistance=null){
+ const shot=buildPuttShotPayload(type,dir,distance)
  applyPuttResultToStatsMap(puttStats,shot.putt,shot.distance)
  shotHistory.push(shot)
  recomputeHistoryFor("putt","Putter",shot.distance)
  flashForShot({type:type==="made"?"made":"missed"},{type:type==="made"?"made":"missed"})
  persistLiveState()
- advancePracticeTarget()
+ if(advance) advancePracticeTarget(excludedDistance)
  updateStats()
 }
 function tryCommitPendingShot(){if(pendingShot.accuracy&&pendingShot.contact) commitShot(pendingShot.accuracy,pendingShot.contact); else updatePendingVisuals()}
@@ -3167,12 +3216,40 @@ function recordContactMissed(dir){pendingShot.contact={type:"missed",dir};tryCom
 function recordChipMade(){commitChipShot("made")}
 function recordChipGimme(){commitChipShot("gimme")}
 function recordChipMissed(){commitChipShot("missed")}
-function recordPuttMade(){withPuttTapLock(()=>{commitPutt("made");puttHaptic(20)})}
-function recordPuttMissed(dir){withPuttTapLock(()=>{commitPutt("missed",dir);puttHaptic([10,40])})}
+function setPuttLagFollowUpDistance(){
+ const sourceDistance=Number(currentDistance)
+ const lagDistance=getLagPuttDistance(sourceDistance)
+ if(!Number.isFinite(sourceDistance)||!Number.isFinite(lagDistance)) return
+ pendingLagPuttRestoreDistance=sourceDistance
+ currentDistance=lagDistance
+ buildDistanceRow()
+ renderPracticeMode()
+ updateStats()
+ persistLiveState()
+}
+function restorePuttDistanceAfterLag(){
+ if(pendingLagPuttRestoreDistance===null)return
+ currentDistance=pendingLagPuttRestoreDistance
+ pendingLagPuttRestoreDistance=null
+ buildDistanceRow()
+ renderPracticeMode()
+ updateStats()
+ persistLiveState()
+}
+function commitPuttResult(type,dir){
+ const isLagFollowUp=pendingLagPuttRestoreDistance!==null
+ const isRandomLagFollowUp=isLagFollowUp&&getActivePracticeMode()==="random"
+ const shouldAdvanceRandom=getActivePracticeMode()==="random"
+ commitPutt(type,dir,currentDistance,shouldAdvanceRandom,isRandomLagFollowUp?pendingLagPuttRestoreDistance:null)
+ if(isLagFollowUp&&!isRandomLagFollowUp) restorePuttDistanceAfterLag()
+}
+function recordPuttMade(){withPuttTapLock(()=>{if(!isPuttMode())return;commitPuttResult("made");puttHaptic(20)})}
+function recordPuttMissed(dir){withPuttTapLock(()=>{if(!isPuttMode())return;commitPuttResult("missed",dir);puttHaptic([10,40])})}
+function recordLagPutt(){withPuttTapLock(()=>{if(!isPuttMode()||pendingLagPuttRestoreDistance!==null||currentDistance<20)return;commitPutt("lagMade",null,currentDistance,false);setPuttLagFollowUpDistance();puttHaptic(20)})}
 function recordDuff(){if(isPuttMode())return;if(isChipMode())commitChipShot("duff");else commitShot({type:"duff"},{type:"duff"})}
 function recordShank(){if(isPuttMode())return;if(isChipMode())commitChipShot("shank");else commitShot({type:"shank"},{type:"shank"})}
 function recordSkull(){if(isPuttMode())return;if(isChipMode())commitChipShot("skull");else commitShot({type:"skull"},{type:"skull"})}
-function advancePracticeTarget(){if(getActivePracticeMode()==="random") pickRandomTarget()}
+function advancePracticeTarget(excludedDistance=null){if(getActivePracticeMode()==="random") pickRandomTarget(excludedDistance)}
 function renderTrackerStats(trackerKey){
  const modeHistory=getModeShotHistory(getActivePracticeMode(),targetSetMode)
  const modeStats=summarizeShotResults(modeHistory,trackerKey)
@@ -3198,10 +3275,13 @@ function updateStats(){
  const rangeActive=isRangeMode()
  const badge=$("targetBadge")
  if(isPuttMode()){
-  const puttHistory=getModeShotHistory(activePracticeMode,"putt")
+ const puttHistory=getModeShotHistory(activePracticeMode,"putt")
+  const allPuttHistory=shotHistory.filter(shot=>getShotTargetMode(shot)==="putt")
   const displayHistory=isRandom?puttHistory:puttHistory.filter(shot=>shot.distance===currentDistance)
   const summary=summarizePuttShotResults(displayHistory)
-  const sequence=summarizeShotSequence(displayHistory)
+  const totalPuttSummary=summarizePuttShotResults(allPuttHistory)
+  const distancePuttHistory=allPuttHistory.filter(shot=>shot.distance===currentDistance)
+  const sequence=summarizeShotSequence(distancePuttHistory)
   let fireCount=0
   if(sequence.streak>=10) fireCount=5
   else if(sequence.streak>=7) fireCount=4
@@ -3210,28 +3290,30 @@ function updateStats(){
   else if(sequence.streak>=1) fireCount=1
   $("puttStatsMade").textContent=summary.made
   $("puttStatsMissed").textContent=summary.missed
-  $("puttStatsMakePercent").textContent=summary.pct
+  $("puttStatsLagPutts").textContent=summary.lagPutts
+   $("puttStatsMakePercent").textContent=summary.pct
+   $("puttStatsLagPuttPercent").textContent=summary.lagPct
   $("puttStatsStreakTitle").textContent=getStreakEmojis(sequence.streak)
   $("puttStatsStreak").textContent=sequence.streak
   $("puttStatsStreakLabel").textContent=EMOJI.fire.repeat(fireCount)
-  $("puttStatsBestStreak").textContent=sequence.best
-  $("puttBestStreakRow").classList.toggle("mode-hidden",!isRandom)
   if(isRandom){
    badge.className="badge random-badge"
-   badge.innerHTML='<div class="badge-content">'+EMOJI.target+' Current Target: '+currentDistance+' feet<br><span class="random-total-line">'+EMOJI.total+' Total Random Putts: '+summary.total+"</span></div>"
+   badge.innerHTML='<div class="badge-content">'+EMOJI.target+' Current Target: '+currentDistance+' feet<br><span class="random-total-line">Total Putts: '+totalPuttSummary.totalWithLag+"</span></div>"
   }else{
    const target=PUTT_PGA_TOUR_AVG[currentDistance]
    badge.className="badge manual-badge "+(summary.pct>=target?"met":"not-met")
    badge.innerHTML=summary.pct>=target
-    ? '<div class="badge-content">'+EMOJI.medal+' Better than PGA Tour Avg!<br>'+EMOJI.target+' Target: '+target+'%<br><span class="random-total-line">'+EMOJI.total+' Total Putts: '+summary.total+"</span></div>"
-    : '<div class="badge-content">'+EMOJI.target+' Target: '+target+'% PGA Tour Avg<br><span class="random-total-line">'+EMOJI.total+' Total Putts: '+summary.total+"</span></div>"
+    ? '<div class="badge-content">'+EMOJI.medal+' Better than PGA Tour Avg!<br>'+EMOJI.target+' Target: '+target+'%<br><span class="random-total-line">Total Putts: '+totalPuttSummary.totalWithLag+"</span></div>"
+    : '<div class="badge-content">'+EMOJI.target+' Target: '+target+'% PGA Tour Avg<br><span class="random-total-line">Total Putts: '+totalPuttSummary.totalWithLag+"</span></div>"
   }
   updatePendingVisuals()
   return
  }
  if(isChipMode()){
-  const chipHistory=getModeShotHistory(activePracticeMode,"chip")
+ const chipHistory=getModeShotHistory(activePracticeMode,"chip")
+  const allChipHistory=shotHistory.filter(shot=>getShotTargetMode(shot)==="chip")
   const summary=summarizeChipShotResults(chipHistory)
+  const totalChipSummary=summarizeChipShotResults(allChipHistory)
   const currentStreak=isRandom?summarizeShotSequence(chipHistory).streak:(chipStreaks[currentClub]&&chipStreaks[currentClub][currentDistance]||0)
   let fireCount=0
   if(currentStreak>=10) fireCount=5
@@ -3255,10 +3337,10 @@ function updateStats(){
   const targetFeet=getTargetFeet(currentDistance,"chip")
   if(isRandom){
    badge.className="badge random-badge"
-   badge.innerHTML='<div class="badge-content">Current Target:<br>'+EMOJI.target+' '+formatClubLabel(currentClub)+' - '+formatShotDistance(currentDistance,"chip")+'<br>'+EMOJI.medal+' PGA Proximity: '+formatPercent(targetFeet)+' ft<br><span class="random-total-line">'+EMOJI.total+' Total Random Shots: '+summary.total+"</span></div>"
+   badge.innerHTML='<div class="badge-content">Current Target:<br>'+EMOJI.target+' '+formatClubLabel(currentClub)+' - '+formatShotDistance(currentDistance,"chip")+'<br>'+EMOJI.medal+' PGA Proximity: '+formatPercent(targetFeet)+' ft<br><span class="random-total-line">Total Shots: '+totalChipSummary.total+"</span></div>"
   }else{
    badge.className="badge manual-badge"
-   badge.innerHTML='<div class="badge-content">'+EMOJI.target+' Target: '+formatPercent(targetFeet)+' ft<br>'+EMOJI.medal+' Up and Down: '+formatPercent(getUpAndDownValue(currentDistance,"chip"))+'%<br><span class="random-total-line">'+EMOJI.total+' Total Manual Shots: '+summary.total+"</span></div>"
+   badge.innerHTML='<div class="badge-content">'+EMOJI.target+' Target: '+formatPercent(targetFeet)+' ft<br>'+EMOJI.medal+' Up and Down: '+formatPercent(getUpAndDownValue(currentDistance,"chip"))+'%<br><span class="random-total-line">Total Shots: '+totalChipSummary.total+"</span></div>"
   }
   updatePendingVisuals()
   return
@@ -3291,14 +3373,14 @@ function updateStats(){
  $("statsSkullMarks").textContent=accuracyModeStats.skulls ? " "+EMOJI.skullMark.repeat(accuracyModeStats.skulls) : ""
  if(rangeActive){
   badge.className="badge random-badge"
-  badge.innerHTML='<div class="badge-content">Current Target:<br>'+EMOJI.target+' '+formatClubLabel(currentClub)+' - '+currentDistance+'yd<br>'+EMOJI.weather+' '+formatSignedWindLabel(getSignedWindSpeed())+', '+formatRangeTemperature()+'<br><span class="random-total-line">'+EMOJI.total+' Total Shots: '+totalShots+'</span></div>'
+  badge.innerHTML='<div class="badge-content">Current Target:<br>'+EMOJI.target+' '+formatClubLabel(currentClub)+' - '+currentDistance+'yd<br>'+EMOJI.weather+' '+formatSignedWindLabel(getSignedWindSpeed())+', '+formatRangeTemperature()+'<br><span class="random-total-line">Total Shots: '+totalShots+'</span></div>'
  }else if(isRandom){
   badge.className="badge random-badge"
-  badge.innerHTML='<div class="badge-content">Current Target:<br>'+EMOJI.target+' '+formatClubLabel(currentClub)+' - '+currentDistance+'yd ('+formatTargetFeetLabel(currentDistance,"wedge")+')<br><span class="random-total-line">'+EMOJI.total+' Total Shots: '+totalShots+'</span></div>'
+  badge.innerHTML='<div class="badge-content">Current Target:<br>'+EMOJI.target+' '+formatClubLabel(currentClub)+' - '+currentDistance+'yd ('+formatTargetFeetLabel(currentDistance,"wedge")+')<br><span class="random-total-line">Total Shots: '+totalShots+'</span></div>'
  }else{
   const upAndDownValue=getUpAndDownValue(currentDistance,"wedge")
   badge.className="badge manual-badge"
-  badge.innerHTML='<div class="badge-content">'+EMOJI.target+' Target: '+formatTargetFeetLabel(currentDistance,"wedge")+'<br>'+EMOJI.medal+' Up and Down: '+formatPercent(upAndDownValue)+(Number.isFinite(Number(upAndDownValue))?"%":"")+'<br><span class="random-total-line">'+EMOJI.total+' Total Shots: '+totalShots+'</span></div>'
+   badge.innerHTML='<div class="badge-content">'+EMOJI.target+' Target: '+formatTargetFeetLabel(currentDistance,"wedge")+'<br>'+EMOJI.medal+' Up and Down: '+formatPercent(upAndDownValue)+(Number.isFinite(Number(upAndDownValue))?"%":"")+'<br><span class="random-total-line">Total Shots: '+totalShots+'</span></div>'
  }
  updatePendingVisuals()
 }
@@ -3397,6 +3479,7 @@ function confirmClearAllHistory(){
  clearAllHistory()
 }
 function clearAllHistory(){
+ pendingLagPuttRestoreDistance=null
  sessions=[]
  TRACKER_KEYS.forEach(trackerKey=>{
   statsMapByTracker[trackerKey]=defaultStats(trackerKey)
@@ -3441,21 +3524,21 @@ function exportHistoryCSV(){
  const pushRow=values=>rows.push(values.map(csvEscape).join(","))
  const fmt=(count,pct)=>count+" ("+pct+"%)"
  const emptyAccuracyAndContact=()=>Array(11).fill("")
- const emptyPuttColumns=()=>Array(8).fill("")
+  const emptyPuttColumns=()=>Array(10).fill("")
  pushRow([
   "Session","Date","Club","Distance","Unit","Mode","Wind","Temp","Target ft",
   "Made","Gimmes","Missed","Total Unsuccessful","Make %","Up and Down %",
   ...getTrackerMissCsvHeaders("accuracy","Accuracy"),
   "Center","Off-Center","Flush %",...getTrackerMissCsvHeaders("contact","Contact"),
   "Best Streak","Duffs","Shanks","Skulls","Mis-Hits",
-  "Practice Mode","PGA Tour Avg %","Delta vs PGA","Putt Short Left","Putt Long Right","Putt Long Left","Putt Short Right","Total Putts"
+   "Practice Mode","PGA Tour Avg %","Delta vs PGA","Putt Short Left","Putt Long Right","Putt Long Left","Putt Short Right","Total Putts","Lag Putts","Lag Putt %"
  ])
  const exportSessions=loadSessions().slice()
  if(shotHistory.length){
   exportSessions.push(buildSessionSnapshotFromShots(shotHistory))
  }
  const grandChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
- const grandPutt={made:0,missed:0,missDir:createPuttMissDir()}
+  const grandPutt={made:0,missed:0,lagMade:0,missDir:createPuttMissDir()}
  exportSessions.forEach((session,index)=>{
   const date=new Date(session.date).toLocaleDateString()
   const accuracyTotals={made:0,missed:0,duffs:0,shanks:0,skulls:0,missDir:createMissDir("accuracy")}
@@ -3607,7 +3690,7 @@ function exportHistoryCSV(){
   PUTT_STAT_DISTANCES.forEach(distance=>{
    const distanceShots=sessionPuttShots.filter(shot=>shot.distance===distance)
    const summary=summarizePuttShotResults(distanceShots)
-   if(!summary.total) return
+    if(!summary.total&&!summary.lagPutts) return
    const pga=PUTT_PGA_TOUR_AVG[distance]
    pushRow([
     index+1,date,"Putter",distance+"ft","ft","Putt","","","",
@@ -3615,12 +3698,12 @@ function exportHistoryCSV(){
     ...emptyAccuracyAndContact(),
     summarizeShotSequence(distanceShots).best,"","","","",
     "",pga+"%",(summary.pct-pga)+"%",
-    summary.missDir.shortLeft,summary.missDir.longRight,summary.missDir.longLeft,summary.missDir.shortRight,summary.total
+     summary.missDir.shortLeft,summary.missDir.longRight,summary.missDir.longLeft,summary.missDir.shortRight,summary.totalWithLag,summary.lagPutts,summary.lagPct+"%"
    ])
   })
   const pushPuttTotal=(practiceLabel,putts)=>{
    const summary=summarizePuttShotResults(putts)
-   if(!summary.total) return
+    if(!summary.total&&!summary.lagPutts) return
    const best=practiceLabel==="RANDOM"?summarizeShotSequence(putts).best:""
    pushRow([
     index+1,date,"Putter","ALL","ft","Putt","","","",
@@ -3632,16 +3715,17 @@ function exportHistoryCSV(){
     fmt(summary.missDir.longRight,summary.missed?Math.round(summary.missDir.longRight/summary.missed*100):0),
     fmt(summary.missDir.longLeft,summary.missed?Math.round(summary.missDir.longLeft/summary.missed*100):0),
     fmt(summary.missDir.shortRight,summary.missed?Math.round(summary.missDir.shortRight/summary.missed*100):0),
-    summary.total
+     summary.totalWithLag,summary.lagPutts,summary.lagPct+"%"
    ])
   }
   pushPuttTotal("MANUAL",sessionPuttShots.filter(shot=>(shot.mode||"manual")==="manual"))
   pushPuttTotal("RANDOM",sessionPuttShots.filter(shot=>(shot.mode||"manual")==="random"))
   pushPuttTotal("COMBINED",sessionPuttShots)
   const sessionPuttSummary=summarizePuttShotResults(sessionPuttShots)
-  if(sessionPuttSummary.total){
-   grandPutt.made+=sessionPuttSummary.made
-   grandPutt.missed+=sessionPuttSummary.missed
+   if(sessionPuttSummary.total||sessionPuttSummary.lagPutts){
+    grandPutt.made+=sessionPuttSummary.made
+    grandPutt.missed+=sessionPuttSummary.missed
+    grandPutt.lagMade+=sessionPuttSummary.lagPutts
    Object.keys(grandPutt.missDir).forEach(key=>{grandPutt.missDir[key]+=sessionPuttSummary.missDir[key]||0})
   }
  })
@@ -3661,9 +3745,10 @@ function exportHistoryCSV(){
    ...emptyPuttColumns()
   ])
  }
- const grandPuttTotal=grandPutt.made+grandPutt.missed
+  const grandPuttStandardTotal=grandPutt.made+grandPutt.missed
+  const grandPuttTotal=grandPuttStandardTotal+grandPutt.lagMade
  if(grandPuttTotal){
-  const grandPuttPct=Math.round(grandPutt.made/grandPuttTotal*100)
+   const grandPuttPct=grandPuttStandardTotal?Math.round(grandPutt.made/grandPuttStandardTotal*100):0
   pushRow([
    "GRAND TOTAL","","Putter","ALL","ft","Putt","","","",
    grandPutt.made,"",grandPutt.missed,grandPutt.missed,grandPuttPct+"%","",
@@ -3674,7 +3759,7 @@ function exportHistoryCSV(){
    fmt(grandPutt.missDir.longRight,grandPutt.missed?Math.round(grandPutt.missDir.longRight/grandPutt.missed*100):0),
    fmt(grandPutt.missDir.longLeft,grandPutt.missed?Math.round(grandPutt.missDir.longLeft/grandPutt.missed*100):0),
    fmt(grandPutt.missDir.shortRight,grandPutt.missed?Math.round(grandPutt.missDir.shortRight/grandPutt.missed*100):0),
-   grandPuttTotal
+    grandPuttTotal,grandPutt.lagMade,grandPuttTotal?Math.round(grandPutt.lagMade/grandPuttTotal*100)+"%":"0%"
   ])
  }
  const csv=rows.join("\n")+"\n"
@@ -3751,7 +3836,7 @@ function renderHistory(){
   const cardParts=[]
   if(accuracyTotals.total) cardParts.push("Made "+accuracyTotals.pct+"% | Flush "+contactTotals.pct+"% ("+accuracyTotals.total+" play shots)")
   if(chipTotals.total) cardParts.push("Chip "+chipTotals.pct+"% ("+chipTotals.total+" chips)")
-  if(puttTotals.total) cardParts.push("Putt "+puttTotals.pct+"% ("+puttTotals.total+" putts)")
+   if(puttTotals.total||puttTotals.lagPutts) cardParts.push("Putt "+puttTotals.pct+"% ("+puttTotals.totalWithLag+" putts)")
   card.innerHTML="<strong>Session "+(index+1)+"</strong><br>"+new Date(session.date).toLocaleDateString()+" - "+cardParts.join(" | ")
   card.onclick=()=>{accordion.style.display=accordion.style.display==="block"?"none":"block"}
   const summaryRow=document.createElement("div")
@@ -3769,9 +3854,9 @@ function renderHistory(){
     '<br><span class="subtle"><strong>Chip:</strong> Made: '+chipTotals.made+' | Gimmes: '+chipTotals.gimmes+' | Missed: '+chipTotals.misses+' | Mis-Hits: '+chipTotals.misHits+'</span>'+
      '<br><span class="subtle">Make %: '+chipTotals.pct+'% | Mis-Hits - Duffs: '+chipTotals.duffs+' | Shanks: '+chipTotals.shanks+' | Skulls: '+chipTotals.skulls+'</span>'
   }
-  if(puttTotals.total){
-   summaryHtml+=
-    '<br><span class="subtle"><strong>Putt:</strong> Made: '+puttTotals.made+' | Missed: '+puttTotals.missed+' | Make %: '+puttTotals.pct+'%</span>'+
+   if(puttTotals.total||puttTotals.lagPutts){
+    summaryHtml+=
+   '<br><span class="subtle"><strong>Putt:</strong> Made: '+puttTotals.made+' | Missed: '+puttTotals.missed+' | Lag Putts: '+puttTotals.lagPutts+' | Make %: '+puttTotals.pct+'% | Lag Putt %: '+puttTotals.lagPct+'%</span>'+
     '<br><span class="subtle">Misses - Long Left: '+puttTotals.missDir.longLeft+' | Long Right: '+puttTotals.missDir.longRight+' | Short Left: '+puttTotals.missDir.shortLeft+' | Short Right: '+puttTotals.missDir.shortRight+'</span>'
   }
   summaryHtml+='<br><span class="subtle">Best Streak: '+bestStreak+'</span>'
@@ -3816,14 +3901,18 @@ function renderHistory(){
   PUTT_STAT_DISTANCES.forEach(distance=>{
    const bucket=session.puttStats[distance]
    const total=(bucket.made||0)+(bucket.missed||0)
-   if(!total) return
-   const pct=Math.round((bucket.made||0)/total*100)
+   const lagPutts=bucket.lagMade||0
+   const totalWithLag=total+lagPutts
+   if(!totalWithLag) return
+   const pct=total?Math.round((bucket.made||0)/total*100):0
+   const lagPct=Math.round(lagPutts/totalWithLag*100)
    const pga=PUTT_PGA_TOUR_AVG[distance]
    const earnedMark=pct>=pga ? " "+EMOJI.star : ""
    const best=getSessionTargetBestStreak(session,"putt","Putter",distance)
    const row=document.createElement("div")
    row.className="history-block"
-   row.innerHTML="<strong>"+distance+"ft (Putt):</strong> "+(bucket.made||0)+"/"+total+" ("+pct+"%) - PGA "+pga+"%"+earnedMark+
+    row.innerHTML="<strong>"+distance+"ft (Putt):</strong> "+(bucket.made||0)+"/"+total+" ("+pct+"%) - PGA "+pga+"%"+earnedMark+
+     '<br><span class="subtle">Lag Putts: '+lagPutts+' | Lag Putt %: '+lagPct+'%</span>'+ 
     '<br><span class="subtle">Misses - Long Left: '+(bucket.missDir.longLeft||0)+' | Long Right: '+(bucket.missDir.longRight||0)+' | Short Left: '+(bucket.missDir.shortLeft||0)+' | Short Right: '+(bucket.missDir.shortRight||0)+'</span>'+
     '<br><span class="subtle">Best Streak: '+best+'</span>'
    accordion.appendChild(row)
