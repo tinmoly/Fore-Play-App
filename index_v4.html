@@ -1132,10 +1132,10 @@ function shuffleItems(items){
  return shuffled
 }
 function getPlayDescription(){
- if(isRangeMode()) return "Range Challenge: 10 shots using random enabled clubs at their wind  and temperature adjusted carry distances.\n\nScoring:\n• 3pts = both MADE + SWEET SPOT\n• 2pts = each MADE shot with off-center contact\n• 1pt = flushed SWEET SPOT but missed target\n• 0 pts = missed target & contact\n• -1pt for each Duff, Shank, or Skull."
+ if(isRangeMode()) return "Range Challenge: 10 shots using random enabled clubs at their wind  and temperature adjusted carry distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt for a Duff, Shank, or Skull."
  if(isChipMode()) return "Up-and-Down Challenge: 9 balls - each shot uses a random enabled club and chip distance.\n\nScoring:\n• 3pts = Gimme\n• 1pt = Inner ring made\n• 0 pts = Outer ring miss\n• -1pt for each Duff, Shank, or Skull."
- if(isPuttMode()) return "Pressure Putting: 18 putts - putt two balls per distance. Three distances from each range at random.\n\nRanges: Short (2-6ft), Mid-range (7-18ft), Lag Putts (>20ft).\nScoring:\n• 1pt = short putts MADE\n• 2pts = mid-range putts MADE\n• 3pts = >20ft putts MADE\n• 1pt = inside Lag Putt ring\n• 0 pts = any miss"
- return "Wedge Combine: 10 shots using any wedge and the enabled distances.\n\nScoring:\n• 3pts = both MADE + SWEET SPOT\n• 2pts = each MADE shot with off-center contact\n• 1pt = flushed SWEET SPOT but missed target\n• 0 pts = missed target & contact\n• -1pt for each Duff, Shank, or Skull."
+ if(isPuttMode()) return "Pressure Putting: 18 putts - putt two balls per distance. Three distances from each range at random.\n\nRanges: Short (2-6ft), Mid-range (7-18ft), Lag Putts (>20ft).\n\nScoring:\n• 1pt = short putts MADE\n• 2pts = mid-range putts MADE\n• 3pts = >20ft putts MADE\n• 1pt = inside Lag Putt ring\n• 0 pts = any miss"
+ return "Wedge Combine: 10 shots using any wedge and the enabled distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt for a Duff, Shank, or Skull."
 }
 function getPlayTargetPoints(){return isChipMode()?9:isPuttMode()?18:20}
 function showPlayModeWarning(message){window.alert(message)}
