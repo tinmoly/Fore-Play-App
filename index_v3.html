@@ -3856,7 +3856,7 @@ function renderHistory(){
   }
    if(puttTotals.total||puttTotals.lagPutts){
     summaryHtml+=
-   '<br><span class="subtle"><strong>Putt:</strong> Made: '+puttTotals.made+' | Missed: '+puttTotals.missed+' | Lag Putts: '+puttTotals.lagPutts+' | Make %: '+puttTotals.pct+'% | Lag Putt %: '+puttTotals.lagPct+'%</span>'+
+   '<br><span class="subtle"><strong>Putt:</strong> Made: '+puttTotals.made+' | Missed: '+puttTotals.missed+' | Lag Putts: '+puttTotals.lagPutts+' | Make %: '+puttTotals.pct+'% | Lag Putt %: '+puttTotals.lagPct+'%</span>'+ 
     '<br><span class="subtle">Misses - Long Left: '+puttTotals.missDir.longLeft+' | Long Right: '+puttTotals.missDir.longRight+' | Short Left: '+puttTotals.missDir.shortLeft+' | Short Right: '+puttTotals.missDir.shortRight+'</span>'
   }
   summaryHtml+='<br><span class="subtle">Best Streak: '+bestStreak+'</span>'
