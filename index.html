@@ -896,11 +896,11 @@ function loadClubVisibilityByMode(){
 }
 function persistClubVisibilityByMode(){localStorage.setItem(CLUB_VISIBILITY_BY_MODE_KEY,JSON.stringify(clubVisibilityByMode))}
 function saveDefaultClubVisibility(){
- if(CLUB_SETUP_MODES.includes(targetSetMode)) defaultClubVisibilityByMode[targetSetMode]=normalizeClubVisibility(defaultClubVisibility)
+ CLUB_SETUP_MODES.forEach(mode=>{defaultClubVisibilityByMode[mode]=normalizeClubVisibility(defaultClubVisibility)})
  persistDefaultClubVisibilityByMode()
 }
 function saveClubVisibility(){
- if(CLUB_SETUP_MODES.includes(targetSetMode)) clubVisibilityByMode[targetSetMode]=normalizeClubVisibility(clubVisibility,defaultClubVisibility)
+ CLUB_SETUP_MODES.forEach(mode=>{clubVisibilityByMode[mode]=normalizeClubVisibility(clubVisibility,defaultClubVisibility)})
  persistClubVisibilityByMode()
 }
 function loadDefaultDistanceVisibilityByMode(){
@@ -960,12 +960,14 @@ function saveDistanceSetupRange(){
  persistDistanceSetupRangeByMode()
 }
 function activateModeSetupState(mode=targetSetMode){
- if(CLUB_SETUP_MODES.includes(mode)){
-  defaultClubVisibility=defaultClubVisibilityByMode[mode]||normalizeClubVisibility(null)
-  clubVisibility=clubVisibilityByMode[mode]||normalizeClubVisibility(null,defaultClubVisibility)
-  defaultClubVisibilityByMode[mode]=defaultClubVisibility
-  clubVisibilityByMode[mode]=clubVisibility
- }
+ const sharedDefaultClubVisibility=defaultClubVisibilityByMode.range||normalizeClubVisibility(null)
+ const sharedClubVisibility=clubVisibilityByMode.range||normalizeClubVisibility(null,sharedDefaultClubVisibility)
+ defaultClubVisibility=sharedDefaultClubVisibility
+ clubVisibility=sharedClubVisibility
+ CLUB_SETUP_MODES.forEach(setupMode=>{
+  defaultClubVisibilityByMode[setupMode]=defaultClubVisibility
+  clubVisibilityByMode[setupMode]=clubVisibility
+ })
  if(YARDAGE_SETUP_MODES.includes(mode)){
   defaultDistanceVisibility=defaultDistanceVisibilityByMode[mode]||normalizeDistanceVisibility(null)
   distanceVisibility=distanceVisibilityByMode[mode]||normalizeDistanceVisibility(null,defaultDistanceVisibility)
@@ -1007,11 +1009,9 @@ function getModeConfig(mode=targetSetMode){return {defaultClub:MODE_CONFIG[mode]
 function getSelectableClubs(mode=targetSetMode){
  if(mode==="putt") return ["Putter"]
  const baseClubs=getModeBaseClubs(mode)
- const modeVisibility=mode===targetSetMode?clubVisibility:clubVisibilityByMode[mode]||clubVisibility
- const modeDefaultVisibility=mode===targetSetMode?defaultClubVisibility:defaultClubVisibilityByMode[mode]||defaultClubVisibility
- const visibleClubs=baseClubs.filter(club=>modeVisibility[club]!==false)
+ const visibleClubs=baseClubs.filter(club=>clubVisibility[club]!==false)
  if(visibleClubs.length) return visibleClubs
- const defaultClubs=baseClubs.filter(club=>modeDefaultVisibility[club]!==false)
+ const defaultClubs=baseClubs.filter(club=>defaultClubVisibility[club]!==false)
  return defaultClubs.length ? defaultClubs : baseClubs.slice()
 }
 function hasVisibleWedgeClubs(){return getSelectableClubs("wedge").length>0}
@@ -2422,7 +2422,6 @@ function commitSetupPanelPendingValues(){
  if(carryChanged||rangeChanged) applySetupChanges()
 }
 function toggleSetupPanel(panel){
- if(isPuttMode()&&panel==="clubs") return
  const isClosingActivePanel=activeSetupPanel===panel
  commitSetupPanelPendingValues()
  if(isClosingActivePanel){
@@ -2557,7 +2556,7 @@ function renderChipDistanceSetupPanel(panel){
  const displayEvenYardDistances=displayDistances.filter(distance=>getChipDistanceYards(distance)%2===0)
  const copy=document.createElement("div")
  copy.className="setup-copy"
- copy.textContent="Show or hide chip distances from 12 feet (4 yards) through 90 feet (30 yards) in 3-foot (1-yard) increments."
+ copy.textContent="Show or hide chip distances from 12 feet (4 yards) through 120 feet (40 yards) in 3-foot (1-yard) increments."
  const toolbar=document.createElement("div")
  toolbar.className="setup-toolbar"
  const showAllButton=document.createElement("button")
@@ -2790,11 +2789,9 @@ function renderSetupPanel(){
  const clubButton=$("clubSetupBtn")
  const distanceButton=$("distanceSetupBtn")
  if(!panel||!clubButton||!distanceButton) return
- const puttActive=isPuttMode()
- if(puttActive&&activeSetupPanel==="clubs") activeSetupPanel=""
  lastSetupPanelViewportWidth=getViewportWidth()
- clubButton.disabled=puttActive
- clubButton.className="mode-btn"+(puttActive?" club-disabled":activeSetupPanel==="clubs"?" active":"")
+ clubButton.disabled=false
+ clubButton.className="mode-btn"+(activeSetupPanel==="clubs"?" active":"")
  distanceButton.className="mode-btn"+(activeSetupPanel==="distances"?" active":"")
  if(!activeSetupPanel){
   panel.className="setup-panel"
