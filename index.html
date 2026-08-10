@@ -68,9 +68,14 @@ h1{font-size:34px;letter-spacing:.04em}
 .mode-btn.club-disabled{background:transparent;color:#aab1ad;box-shadow:none;cursor:default}
 .mode-btn:disabled{cursor:default;opacity:1}
 .mode-target{margin:10px 0 14px;padding:10px;border-radius:10px;background:#1c7c5b;font-size:24px;font-weight:800;text-align:center}
-.play-mode-description{display:none;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#145a43;color:#fff;font-size:15px;line-height:1.35;text-align:center;white-space:pre-line}
+.play-mode-description{display:none;position:relative;margin:38px 0 0;padding:10px 12px 42px;border-radius:0 10px 10px 10px;background:#145a43;color:#fff;font-size:15px;line-height:1.35;text-align:center}
 .play-mode-description.active{display:block}
 .play-mode-description.play-description-left{text-align:left}
+.play-mode-description.play-rules-collapsed{height:0;margin:38px 0 0;padding:0;background:transparent;overflow:visible}
+.play-mode-description.play-rules-collapsed .play-mode-description-copy,.play-mode-description.play-rules-collapsed .play-rules-hide{display:none}
+.play-mode-description-copy{display:block;white-space:pre-line}
+.play-rules-tab{position:absolute;top:-30px;left:0;border:none;border-radius:10px 10px 0 0;padding:7px 18px;background:#145a43;color:#fff;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 -2px 0 #0e4f3a}
+.play-rules-hide{position:absolute;right:9px;bottom:8px;border:none;border-radius:8px;padding:5px 10px;background:#8a8a8a;color:#000;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 #666}
 .mode-btn.play-active{background:#0096FF;color:#000;box-shadow:0 4px 0 #0074c7}
 .setup-panel{display:none;margin-top:12px;padding:12px;border-radius:12px;background:#145a43;box-sizing:border-box}
 .setup-panel.active{display:block}
@@ -631,6 +636,7 @@ let currentDistance=MODE_CONFIG.wedge.defaultDistance
 let practiceMode="manual"
 let playPersonalBests={range:0,wedge:0,chip:0,putt:0}
 let playGame={mode:null,queue:[],index:0,points:0,targetPoints:0,results:[]}
+let playRulesVisible=true
 let targetSetMode=DEFAULT_TARGET_SET_MODE
 let rangeWindSpeed=0
 let rangeTemperature=RANGE_DEFAULT_TEMP
@@ -1202,6 +1208,9 @@ function startPlayModeGame(){
  setTarget(first.club,first.distance)
  return true
 }
+function showPlayRules(){if(!isPlayMode())return;playRulesVisible=true;renderPracticeMode()}
+function hidePlayRules(){if(!isPlayMode())return;playRulesVisible=false;renderPracticeMode()}
+function togglePlayRules(){if(!isPlayMode())return;playRulesVisible=!playRulesVisible;renderPracticeMode()}
 function getPlayShotPoints(shot){
  if(!shot) return 0
  if(shot.targetSetMode==="chip"){
@@ -1227,7 +1236,7 @@ function renderPlayBadge(){
  const attemptLabel=isPuttMode()?"Putts Taken":isChipMode()?"Chips Taken":"Shots Taken"
  const attempts=playGame.results.length
  badge.className="badge random-badge"
- badge.innerHTML='<div class="badge-content">🎯 Target Points: '+playGame.targetPoints+'<br>'+attemptLabel+': '+attempts+' | Points Scored: '+playGame.points+'<br>🏆 Personal Best: '+(playPersonalBests[targetSetMode]||0)+"</div>"
+ badge.innerHTML='<div class="badge-content">🎯 Target Points: '+playGame.targetPoints+'<br>📊 '+attemptLabel+': '+attempts+'<br>🏅 Points Scored: '+playGame.points+'<br>🏆 Personal Best: '+(playPersonalBests[targetSetMode]||0)+"</div>"
 }
 function advancePlayGame(shot){
  if(!isPlayMode()||playGame.mode!==targetSetMode||!playGame.queue.length){startPlayModeGame();return}
@@ -2829,6 +2838,10 @@ function renderPracticeMode(){
  const puttActive=isPuttMode()
  const isRandom=activePracticeMode==="random"
  const playActive=activePracticeMode==="play"
+ const clubRow=$("clubRow")
+ const distanceRow=$("distanceRow")
+ if(clubRow) clubRow.classList.toggle("mode-hidden",playActive&&!rangeActive)
+ if(distanceRow) distanceRow.classList.toggle("mode-hidden",playActive)
  btn.innerHTML=playActive ? "Play<br>Mode On" : isRandom ? "Random<br>Mode On" : "Manual<br>Mode On"
  btn.className="mode-btn"+(playActive?" play-active":isRandom?" active":"")
  targetModeBtn.innerHTML=rangeActive ? "Range<br>Mode On" : chipActive ? "Chip<br>Mode On" : puttActive ? "Putt<br>Mode On" : "Wedge<br>Mode On"
@@ -2839,8 +2852,25 @@ function renderPracticeMode(){
   : (playActive ? "Play Shot: " : isRandom ? "Random Shot: " : "Current Shot: ")+formatClubLabel(currentClub)+" - "+targetDistanceLabel
  const playDescription=$("playModeDescription")
  if(playDescription){
-  playDescription.textContent=playActive?getPlayDescription():""
+  playDescription.innerHTML=""
+  if(playActive){
+   const rulesTab=document.createElement("button")
+   rulesTab.type="button"
+   rulesTab.className="play-rules-tab"
+   rulesTab.textContent="Rules"
+   rulesTab.onclick=togglePlayRules
+   const copy=document.createElement("span")
+   copy.className="play-mode-description-copy"
+   copy.textContent=getPlayDescription()
+   const hideButton=document.createElement("button")
+   hideButton.type="button"
+   hideButton.className="play-rules-hide"
+   hideButton.textContent="Hide"
+   hideButton.onclick=hidePlayRules
+   playDescription.append(rulesTab,copy,hideButton)
+  }
   playDescription.classList.toggle("active",playActive)
+  playDescription.classList.toggle("play-rules-collapsed",playActive&&!playRulesVisible)
   playDescription.classList.toggle("play-description-left",playActive&&(puttActive||chipActive||rangeActive||targetSetMode==="wedge"))
  }
  const strokeInterface=$("strokeInterface")
