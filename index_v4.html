@@ -2840,8 +2840,10 @@ function renderPracticeMode(){
  const playActive=activePracticeMode==="play"
  const clubRow=$("clubRow")
  const distanceRow=$("distanceRow")
- if(clubRow) clubRow.classList.toggle("mode-hidden",playActive&&!rangeActive)
- if(distanceRow) distanceRow.classList.toggle("mode-hidden",playActive)
+ const randomTargetPills=isRandom&&(targetSetMode==="wedge"||targetSetMode==="chip")
+ const randomPuttPills=isRandom&&puttActive
+ if(clubRow) clubRow.classList.toggle("mode-hidden",(playActive&&!rangeActive)||randomTargetPills)
+ if(distanceRow) distanceRow.classList.toggle("mode-hidden",playActive||randomTargetPills||randomPuttPills)
  btn.innerHTML=playActive ? "Play<br>Mode On" : isRandom ? "Random<br>Mode On" : "Manual<br>Mode On"
  btn.className="mode-btn"+(playActive?" play-active":isRandom?" active":"")
  targetModeBtn.innerHTML=rangeActive ? "Range<br>Mode On" : chipActive ? "Chip<br>Mode On" : puttActive ? "Putt<br>Mode On" : "Wedge<br>Mode On"
