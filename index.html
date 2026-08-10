@@ -2848,7 +2848,7 @@ function renderPracticeMode(){
  btn.className="mode-btn"+(playActive?" play-active":isRandom?" active":"")
  targetModeBtn.innerHTML=rangeActive ? "Range<br>Mode On" : chipActive ? "Chip<br>Mode On" : puttActive ? "Putt<br>Mode On" : "Wedge<br>Mode On"
  targetModeBtn.className="mode-btn target-set-btn"+(rangeActive?" range-active":chipActive?" chip-active":puttActive?" putt-active":"")
- const targetDistanceLabel=chipActive&&playActive ? formatChipDistanceSetupLabel(currentDistance) : formatShotDistance(currentDistance,targetSetMode)
+ const targetDistanceLabel=chipActive ? formatChipDistanceSetupLabel(currentDistance) : formatShotDistance(currentDistance,targetSetMode)
  target.textContent=puttActive
   ? (playActive ? "Play Putt: " : isRandom ? "Random Putt: " : "Current Putt: ")+formatShotDistance(currentDistance,"putt")
   : (playActive ? "Play Shot: " : isRandom ? "Random Shot: " : "Current Shot: ")+formatClubLabel(currentClub)+" - "+targetDistanceLabel
