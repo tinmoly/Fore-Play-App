@@ -75,7 +75,10 @@ h1{font-size:34px;letter-spacing:.04em}
 .play-mode-description.play-rules-collapsed{height:0;margin:38px 0 0;padding:0;background:transparent;overflow:visible}
 .play-mode-description.play-rules-collapsed .play-mode-description-copy,.play-mode-description.play-rules-collapsed .play-rules-hide{display:none}
 .play-mode-description-copy{display:block;white-space:pre-line}
-.play-rules-tab{position:absolute;top:-30px;left:0;border:none;border-radius:10px 10px 0 0;padding:7px 18px;background:#145a43;color:#fff;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 -2px 0 #0e4f3a}
+.play-rules-tab{position:absolute;top:-30px;left:0;z-index:2;border:none;border-radius:10px 10px 0 0;padding:7px 18px;background:#145a43;color:#fff;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 -2px 0 #0e4f3a,3px 0 0 rgba(8,57,41,.62)}
+.range-wind-temp-tab.beside-rules{left:76px;z-index:1}
+.range-wind-temp-content{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:4px}
+.range-wind-temp-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
 .play-rules-hide{position:absolute;right:9px;bottom:8px;border:none;border-radius:8px;padding:5px 10px;background:#8a8a8a;color:#000;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 #666}
 .mode-btn.play-active{background:#0096FF;color:#000;box-shadow:0 4px 0 #0074c7}
 .setup-panel{display:none;margin-top:12px;padding:12px;border-radius:12px;background:#145a43;box-sizing:border-box}
@@ -664,6 +667,7 @@ let practiceMode="manual"
 let playPersonalBests={range:0,wedge:0,chip:0,putt:0}
 let playGame={mode:null,queue:[],index:0,points:0,targetPoints:0,results:[]}
 let playRulesVisible=true
+let rangeWindTempVisible=false
 let pendingClubDeletion=""
 let targetSetMode=DEFAULT_TARGET_SET_MODE
 let rangeWindSpeed=0
@@ -1318,7 +1322,9 @@ function startPlayModeGame(){
 }
 function showPlayRules(){if(!isPlayMode())return;playRulesVisible=true;renderPracticeMode()}
 function hidePlayRules(){if(!isPlayMode())return;playRulesVisible=false;renderPracticeMode()}
-function togglePlayRules(){if(!isPlayMode())return;playRulesVisible=!playRulesVisible;renderPracticeMode()}
+function togglePlayRules(){if(!isPlayMode())return;playRulesVisible=!playRulesVisible;if(playRulesVisible&&isRangeMode())rangeWindTempVisible=false;renderPracticeMode()}
+function hideRangeWindTemp(){if(!isRangeMode())return;rangeWindTempVisible=false;renderPracticeMode()}
+function toggleRangeWindTemp(){if(!isRangeMode())return;rangeWindTempVisible=!rangeWindTempVisible;if(rangeWindTempVisible&&isPlayMode())playRulesVisible=false;renderPracticeMode()}
 function getPlayShotPoints(shot){
  if(!shot) return 0
  if(shot.targetSetMode==="chip"){
@@ -2961,6 +2967,40 @@ function updatePuttLagRing(){
  if(label) label.innerHTML="Lag Putt:<br>"+formatLagPuttDistance(currentDistance)+" ft"
  if(puttRing) puttRing.classList.toggle("lag-enabled",enabled)
 }
+function createRangeWindTempControls(){
+ const controls=document.createElement("div")
+ controls.className="range-wind-temp-content"
+ const windRow=document.createElement("div")
+ windRow.className="range-wind-temp-row"
+ const windLabel=document.createElement("button")
+ windLabel.className="pill-btn";windLabel.textContent="Wind";windLabel.disabled=true
+ const speedWrap=document.createElement("div")
+ speedWrap.className="range-speed"
+ const minusBtn=document.createElement("button")
+ minusBtn.className="range-speed-btn";minusBtn.textContent="-";minusBtn.onclick=()=>adjustWindSpeed(-5)
+ const speedValue=document.createElement("div")
+ speedValue.className="range-speed-value";speedValue.textContent=formatWindSpeed()
+ const plusBtn=document.createElement("button")
+ plusBtn.className="range-speed-btn";plusBtn.textContent="+";plusBtn.onclick=()=>adjustWindSpeed(5)
+ speedWrap.append(minusBtn,speedValue,plusBtn)
+ windRow.append(windLabel,speedWrap)
+ const tempRow=document.createElement("div")
+ tempRow.className="range-wind-temp-row"
+ const tempLabel=document.createElement("button")
+ tempLabel.className="pill-btn";tempLabel.textContent="Temp";tempLabel.disabled=true
+ const tempWrap=document.createElement("div")
+ tempWrap.className="range-speed range-temp-stepper"
+ const tempMinusBtn=document.createElement("button")
+ tempMinusBtn.className="range-speed-btn";tempMinusBtn.textContent="-";tempMinusBtn.onclick=()=>adjustRangeTemperature(-RANGE_TEMP_STEP)
+ const tempValue=document.createElement("div")
+ tempValue.className="range-speed-value range-temp-value";tempValue.textContent=formatRangeTemperature()
+ const tempPlusBtn=document.createElement("button")
+ tempPlusBtn.className="range-speed-btn";tempPlusBtn.textContent="+";tempPlusBtn.onclick=()=>adjustRangeTemperature(RANGE_TEMP_STEP)
+ tempWrap.append(tempMinusBtn,tempValue,tempPlusBtn)
+ tempRow.append(tempLabel,tempWrap)
+ controls.append(windRow,tempRow)
+ return controls
+}
 function renderPracticeMode(){
  const btn=$("practiceModeBtn")
  const target=$("modeTargetText")
@@ -3014,15 +3054,35 @@ function renderPracticeMode(){
    const copy=document.createElement("span")
    copy.className="play-mode-description-copy"
    copy.textContent=getPlayDescription()
+   copy.classList.toggle("mode-hidden",!playRulesVisible)
    const hideButton=document.createElement("button")
    hideButton.type="button"
    hideButton.className="play-rules-hide"
    hideButton.textContent="Hide"
    hideButton.onclick=hidePlayRules
+   hideButton.classList.toggle("mode-hidden",!playRulesVisible)
    playDescription.append(rulesTab,copy,hideButton)
   }
-  playDescription.classList.toggle("active",playActive)
-  playDescription.classList.toggle("play-rules-collapsed",playActive&&!playRulesVisible)
+  if(rangeActive){
+   const windTempTab=document.createElement("button")
+   windTempTab.type="button"
+   windTempTab.className="play-rules-tab range-wind-temp-tab"+(playActive?" beside-rules":"")
+   windTempTab.textContent="Wind/Temp"
+   windTempTab.onclick=toggleRangeWindTemp
+   playDescription.appendChild(windTempTab)
+   if(rangeWindTempVisible){
+    const windTempHideButton=document.createElement("button")
+    windTempHideButton.type="button"
+    windTempHideButton.className="play-rules-hide"
+    windTempHideButton.textContent="Hide"
+    windTempHideButton.onclick=hideRangeWindTemp
+    playDescription.append(createRangeWindTempControls(),windTempHideButton)
+   }
+  }
+  const showPanel=playActive||rangeActive
+  const showPanelContent=(playActive&&playRulesVisible)||(rangeActive&&rangeWindTempVisible)
+  playDescription.classList.toggle("active",showPanel)
+  playDescription.classList.toggle("play-rules-collapsed",showPanel&&!showPanelContent)
   playDescription.classList.toggle("play-description-left",playActive&&(puttActive||chipActive||rangeActive||targetSetMode==="wedge"))
  }
  const strokeInterface=$("strokeInterface")
@@ -3061,39 +3121,10 @@ function buildClubRow(){
  }
  const rangeMode=isRangeMode()
  if(rangeMode){
-  r.style.justifyContent="center"
-  r.style.flexDirection="column"
-  r.style.alignItems="center"
-  r.style.overflowX="visible"
-  const windRow=document.createElement("div")
-  windRow.style.display="flex";windRow.style.gap="8px";windRow.style.alignItems="center";windRow.style.justifyContent="center";windRow.style.flexWrap="wrap";windRow.style.width="100%"
-  const windLabel=document.createElement("button")
-  windLabel.className="pill-btn";windLabel.textContent="Wind";windLabel.disabled=true
-  const speedWrap=document.createElement("div")
-  speedWrap.className="range-speed"
-  const minusBtn=document.createElement("button")
-  minusBtn.className="range-speed-btn";minusBtn.textContent="-";minusBtn.onclick=()=>adjustWindSpeed(-5)
-  const speedValue=document.createElement("div")
-  speedValue.className="range-speed-value";speedValue.textContent=formatWindSpeed()
-  const plusBtn=document.createElement("button")
-  plusBtn.className="range-speed-btn";plusBtn.textContent="+";plusBtn.onclick=()=>adjustWindSpeed(5)
-  speedWrap.append(minusBtn,speedValue,plusBtn)
-  windRow.append(windLabel,speedWrap)
-  const tempRow=document.createElement("div")
-  tempRow.style.display="flex";tempRow.style.gap="8px";tempRow.style.alignItems="center";tempRow.style.justifyContent="center";tempRow.style.flexWrap="wrap";tempRow.style.width="100%"
-  const tempLabel=document.createElement("button")
-  tempLabel.className="pill-btn";tempLabel.textContent="Temp";tempLabel.disabled=true
-  const tempWrap=document.createElement("div")
-  tempWrap.className="range-speed range-temp-stepper"
-  const tempMinusBtn=document.createElement("button")
-  tempMinusBtn.className="range-speed-btn";tempMinusBtn.textContent="-";tempMinusBtn.onclick=()=>adjustRangeTemperature(-RANGE_TEMP_STEP)
-  const tempValue=document.createElement("div")
-  tempValue.className="range-speed-value range-temp-value";tempValue.textContent=formatRangeTemperature()
-  const tempPlusBtn=document.createElement("button")
-  tempPlusBtn.className="range-speed-btn";tempPlusBtn.textContent="+";tempPlusBtn.onclick=()=>adjustRangeTemperature(RANGE_TEMP_STEP)
-  tempWrap.append(tempMinusBtn,tempValue,tempPlusBtn)
-  tempRow.append(tempLabel,tempWrap)
-  r.append(windRow,tempRow)
+  r.style.justifyContent=""
+  r.style.flexDirection=""
+  r.style.alignItems=""
+  r.style.overflowX=""
   if(getActivePracticeMode()==="manual"){
    const clubPillRow=document.createElement("div")
    clubPillRow.style.display="flex"
@@ -4361,8 +4392,8 @@ function initApp(){
  rangeSelections=selectionState.range
  practiceMode=loadPracticeMode()
  playPersonalBests=loadPlayPersonalBests()
- rangeWindSpeed=loadRangeWindSpeed()
- rangeTemperature=loadRangeTemperature()
+ rangeWindSpeed=0
+ rangeTemperature=RANGE_DEFAULT_TEMP
  syncSelectionsToConfiguration()
  persistLiveState()
  if(practiceMode==="play") startPlayModeGame()
