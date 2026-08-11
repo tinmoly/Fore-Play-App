@@ -68,6 +68,7 @@ h1{font-size:34px;letter-spacing:.04em}
 .mode-btn.club-disabled{background:transparent;color:#aab1ad;box-shadow:none;cursor:default}
 .mode-btn:disabled{cursor:default;opacity:1}
 .mode-target{margin:10px 0 14px;padding:10px;border-radius:10px;background:#1c7c5b;font-size:24px;font-weight:800;text-align:center}
+.play-progress{margin:0 0 4px;color:#000;text-align:center}
 .play-mode-description{display:none;position:relative;margin:38px 0 0;padding:10px 12px 42px;border-radius:0 10px 10px 10px;background:#145a43;color:#fff;font-size:15px;line-height:1.35;text-align:center}
 .play-mode-description.active{display:block}
 .play-mode-description.play-description-left{text-align:left}
@@ -333,7 +334,7 @@ h1{font-size:34px;letter-spacing:.04em}
 
 <div id="clubRow" class="pill-row"></div>
 <div id="distanceRow" class="pill-row"></div>
-<div id="modeTarget" class="mode-target">Current Shot:</div>
+<div id="modeTarget" class="mode-target"><div id="playProgress" class="play-progress mode-hidden"></div><div id="modeTargetText">Current Shot:</div></div>
 
 <div id="strokeInterface" class="interface-window">
 <div class="tracker-grid">
@@ -1180,12 +1181,12 @@ function shuffleItems(items){
  return shuffled
 }
 function getPlayDescription(){
- if(isRangeMode()) return "Range Challenge: 10 shots using random enabled clubs at their wind  and temperature adjusted carry distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
+ if(isRangeMode()) return "Range Challenge: 9 shots using random enabled clubs at their wind and temperature adjusted carry distances. 3 shots from each club type: wedges, irons, and hybrid/woods.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
  if(isChipMode()) return "Up-and-Down Challenge: 18 Chips - 3 balls from six different random enabled club selections and chip distances.\n\nScoring:\n• 3pts = Gimme\n• 2pts = Inner ring made\n• 1pt = Outer ring miss\n• 0 pts = Target miss\n• -1pt = Duff, Shank, or Skull."
  if(isPuttMode()) return "Pressure Putting: 18 putts - putt two balls per distance. Three distances from each range at random.\n\nRanges: Short (2-6ft), Mid-range (7-18ft), Lag Putts (>20ft).\n\nScoring:\n• 1pt = short putts MADE\n• 2pts = mid-range putts MADE\n• 3pts = >20ft putts MADE\n• 1pt = inside Lag Putt ring\n• 0 pts = any miss"
- return "Wedge Combine: 10 shots using any wedge and the enabled distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
+ return "Wedge Combine: 9 shots - 3 rounds, three shots each. Each round uses one random enabled wedge at three random enabled Wedge Mode distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
 }
-function getPlayTargetPoints(){return isChipMode()?36:isPuttMode()?18:20}
+function getPlayTargetPoints(){return isChipMode()?36:18}
 function showAppMessage(title,message,icon="⚠️"){
  const modal=typeof document!=="undefined"&&typeof document.getElementById==="function"?$("appMessageModal"):null
  if(!modal){if(typeof window!=="undefined"&&typeof window.alert==="function")window.alert(message);return}
@@ -1236,6 +1237,40 @@ function getRandomRangePlayTargets(count){
  }
  return queue
 }
+function buildRangePlayQueue(){
+ const enabledClubs=getSelectableClubs("range")
+ const groups=[
+  {category:"Wedges",clubs:enabledClubs.filter(club=>getRangeClubCategory(club)==="wedge")},
+  {category:"Irons",clubs:enabledClubs.filter(club=>getRangeClubCategory(club)==="iron")},
+  {category:"Hybrid/Woods",clubs:enabledClubs.filter(club=>getRangeClubCategory(club)==="woodHybrid")}
+ ]
+ const missing=groups.filter(group=>!group.clubs.length)
+ if(missing.length){
+  showPlayModeWarning("Range Challenge needs at least one enabled wedge, iron, and hybrid/wood in Club Setup. Please update Club Setup before turning on Play Mode.")
+  return null
+ }
+ return shuffleItems(groups).flatMap(group=>{
+  let previousClub=""
+  return Array.from({length:3},()=>{
+   const options=group.clubs.length>1?group.clubs.filter(club=>club!==previousClub):group.clubs
+   const club=options[Math.floor(Math.random()*options.length)]
+   previousClub=club
+   return {club,distance:getManualRangeTargetDistance(club),category:group.category}
+  })
+ })
+}
+function buildWedgePlayQueue(){
+ const clubs=getSelectableClubs("wedge").filter(isWedgePlayClub)
+ const distances=getSelectableDistances("wedge")
+ if(!clubs.length||distances.length<3){
+  showPlayModeWarning("Wedge Combine needs at least one enabled wedge and three enabled Wedge Mode distances. Please update Club Setup or Distance Setup before turning on Play Mode.")
+  return null
+ }
+ return Array.from({length:3},()=>{
+  const club=clubs[Math.floor(Math.random()*clubs.length)]
+  return shuffleItems(distances).slice(0,3).map(distance=>({club,distance}))
+ }).flat()
+}
 function buildPuttPlayQueue(){
  const distances=getSelectableDistances("putt")
  const groups=[
@@ -1267,7 +1302,8 @@ function buildChipPlayQueue(){
 function buildPlayQueue(){
  if(isPuttMode()) return buildPuttPlayQueue()
  if(isChipMode()) return buildChipPlayQueue()
- return getRandomPlayTargets(targetSetMode,10)
+ if(isRangeMode()) return buildRangePlayQueue()
+ return buildWedgePlayQueue()
 }
 function startPlayModeGame(){
  const queue=buildPlayQueue()
@@ -2927,12 +2963,14 @@ function updatePuttLagRing(){
 }
 function renderPracticeMode(){
  const btn=$("practiceModeBtn")
- const target=$("modeTarget")
+ const target=$("modeTargetText")
  const targetModeBtn=$("targetSetBtn")
+ const playProgress=$("playProgress")
  const activePracticeMode=getActivePracticeMode()
  const rangeActive=isRangeMode()
  const chipActive=isChipMode()
  const puttActive=isPuttMode()
+ const wedgeActive=targetSetMode==="wedge"
  const isRandom=activePracticeMode==="random"
  const playActive=activePracticeMode==="play"
  const clubRow=$("clubRow")
@@ -2946,6 +2984,21 @@ function renderPracticeMode(){
  targetModeBtn.innerHTML=rangeActive ? "Range<br>Mode On" : chipActive ? "Chip<br>Mode On" : puttActive ? "Putt<br>Mode On" : "Wedge<br>Mode On"
  targetModeBtn.className="mode-btn target-set-btn"+(rangeActive?" range-active":chipActive?" chip-active":puttActive?" putt-active":"")
  const targetDistanceLabel=chipActive ? formatChipDistanceSetupLabel(currentDistance) : formatShotDistance(currentDistance,targetSetMode)
+ if(playProgress){
+  const showPlayProgress=playActive&&(rangeActive||wedgeActive||chipActive||puttActive)&&playGame.mode===targetSetMode&&playGame.queue.length>0
+  playProgress.classList.toggle("mode-hidden",!showPlayProgress)
+  if(playActive&&rangeActive&&showPlayProgress){
+   const category=playGame.queue[playGame.index]&&playGame.queue[playGame.index].category||"Range"
+   playProgress.textContent="Round "+(Math.floor(playGame.index/3)+1)+" | "+category+" | Shot "+(playGame.index%3+1)
+  }
+  if(playActive&&chipActive&&showPlayProgress) playProgress.textContent="Round "+(Math.floor(playGame.index/3)+1)+" | Shot "+(playGame.index%3+1)
+  if(playActive&&wedgeActive&&showPlayProgress) playProgress.textContent="Round "+(Math.floor(playGame.index/3)+1)+" | Shot "+(playGame.index%3+1)
+  if(playActive&&puttActive&&showPlayProgress){
+   const category=playGame.queue[playGame.index]&&playGame.queue[playGame.index].category
+   const rangeLabel=category==="short"?"Short Range":category==="mid-range"?"Mid-Range":"Lag Range"
+   playProgress.textContent="Round "+(Math.floor(playGame.index/2)+1)+" | "+rangeLabel+" | Putt "+(playGame.index%2+1)
+  }
+ }
  target.textContent=puttActive
   ? (playActive ? "Play Putt: " : isRandom ? "Random Putt: " : "Current Putt: ")+formatShotDistance(currentDistance,"putt")
   : (playActive ? "Play Shot: " : isRandom ? "Random Shot: " : "Current Shot: ")+formatClubLabel(currentClub)+" - "+targetDistanceLabel
