@@ -167,10 +167,14 @@ h1{font-size:34px;letter-spacing:.04em}
 
 .chip-interface{background:#145a43;border-radius:14px;margin:14px 0;padding:10px;display:grid;place-items:center}
 .chip-shot-ring{width:min(290px,100%);height:auto;aspect-ratio:1/1;border-radius:50%;position:relative;margin:0 auto}
+.chip-target-miss{position:absolute;inset:-3px;border:3px solid rgba(188,194,199,.88);border-radius:10px;background:linear-gradient(145deg,rgba(255,255,255,.76) 0%,rgba(213,219,224,.60) 100%);cursor:pointer;z-index:0;box-shadow:4px 0 0 rgba(126,136,145,.85),0 4px 0 rgba(126,136,145,.72),0 9px 17px rgba(0,0,0,.24)}
+.chip-target-miss-label{position:absolute;left:9px;bottom:6px;color:#5d666c;font-size:18px;font-weight:800;line-height:1;pointer-events:none}
+.chip-target-miss:hover{filter:brightness(1.08)}
+.chip-target-miss:active{transform:translate(3px,3px);box-shadow:1px 0 0 rgba(126,136,145,.85),0 1px 0 rgba(126,136,145,.72),0 4px 9px rgba(0,0,0,.24)}
 .chip-target-ring{position:absolute;border:none;border-radius:50%;cursor:pointer;transition:filter .12s ease,transform .12s ease;padding:0}
 .chip-target-ring:hover{filter:brightness(1.08)}
 .chip-target-ring:active{transform:scale(.97) translateY(3px);filter:brightness(.95)}
-.chip-outer-ring{inset:0;background:#E34234;box-shadow:2px 0 0 #b53227,0 2px 0 #b53227,0 9px 17px rgba(0,0,0,.28);border-bottom:2px solid #b53227;border-right:2px solid #b53227;box-sizing:border-box}
+.chip-outer-ring{inset:0;background:#E34234;box-shadow:2px 0 0 #b53227,0 2px 0 #b53227,0 9px 17px rgba(0,0,0,.28);border-bottom:2px solid #b53227;border-right:2px solid #b53227;box-sizing:border-box;z-index:1}
 .chip-inner-ring{inset:calc((100% - min(171px,72%))/2);background:#fff;box-shadow:2px 0 0 #c8c8c8,0 2px 0 #c8c8c8,inset 0 0 0 2px rgba(0,0,0,.08),0 7px 13px rgba(0,0,0,.22);border-bottom:2px solid #c8c8c8;border-right:2px solid #c8c8c8;box-sizing:border-box;z-index:2}
 .chip-gimme{width:85px;height:85px;border-radius:50%;border:none;background:#2ecc71;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#000;box-shadow:2px 0 0 #1e9e54,0 2px 0 #1e9e54,0 9px 17px rgba(0,0,0,.35);border-bottom:2px solid #1e9e54;border-right:2px solid #1e9e54;cursor:pointer;text-align:center;line-height:1.05;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;box-sizing:border-box;padding-top:12px}
 .chip-gimme:active{transform:translate(-50%,-50%) translateY(2px) scale(.97);box-shadow:1px 0 0 #1e9e54,0 1px 0 #1e9e54,0 6px 10px rgba(0,0,0,.35)}
@@ -204,7 +208,7 @@ h1{font-size:34px;letter-spacing:.04em}
  .putt-lag-ring:active{transform:translate(-50%,-50%) rotate(-45deg) scale(.97);filter:brightness(.92)}
  .putt-lag-label{position:absolute;bottom:calc(10% - 1.05em);left:50%;transform:translate(-50%,3px);white-space:nowrap;font-size:16px;font-weight:800;line-height:1.05;color:#000;pointer-events:none;text-align:center}
 
- button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.contact-wedge):not(.chip-target-ring):not(.chip-gimme):not(.putt-miss-wedge):not(.putt-made):not(.putt-lag-ring){transform:translateY(3px) scale(.98);box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
+ button:active:not(.accuracy-made):not(.contact-made):not(.accuracy-wedge):not(.contact-wedge):not(.chip-target-ring):not(.chip-target-miss):not(.chip-gimme):not(.putt-miss-wedge):not(.putt-made):not(.putt-lag-ring){transform:translateY(3px) scale(.98);box-shadow:0 2px 0 rgba(0,0,0,.35)!important}
 
 .stats{text-align:center;font-size:18px;margin-top:16px}
 .stats p{margin:6px 0}
@@ -287,6 +291,27 @@ h1{font-size:34px;letter-spacing:.04em}
 </div>
 </div>
 </div>
+<div id="appMessageModal" class="session-warning-backdrop" role="dialog" aria-modal="true" aria-labelledby="appMessageModalTitle" aria-describedby="appMessageModalMessage" aria-hidden="true" tabindex="-1" onclick="if(event.target===this)closeAppMessage()" onkeydown="handleAppMessageKeydown(event)">
+<div class="session-warning-dialog">
+<div id="appMessageModalIcon" class="session-warning-icon" aria-hidden="true">⚠️</div>
+<h2 id="appMessageModalTitle">Message</h2>
+<p id="appMessageModalMessage"></p>
+<div class="session-warning-actions">
+<button id="closeAppMessageBtn" class="session-warning-btn session-warning-confirm" type="button" onclick="closeAppMessage()">OK</button>
+</div>
+</div>
+</div>
+<div id="deleteClubModal" class="session-warning-backdrop" role="dialog" aria-modal="true" aria-labelledby="deleteClubModalTitle" aria-describedby="deleteClubModalMessage" aria-hidden="true" tabindex="-1" onclick="if(event.target===this)closeDeleteClubWarning()" onkeydown="handleDeleteClubWarningKeydown(event)">
+<div class="session-warning-dialog">
+<div class="session-warning-icon" aria-hidden="true">⚠️</div>
+<h2 id="deleteClubModalTitle">Remove Club?</h2>
+<p id="deleteClubModalMessage"></p>
+<div class="session-warning-actions">
+<button class="session-warning-btn session-warning-cancel" type="button" onclick="closeDeleteClubWarning()">Cancel</button>
+<button id="confirmDeleteClubBtn" class="session-warning-btn session-warning-destructive" type="button" onclick="confirmDeleteClub()">Remove Club</button>
+</div>
+</div>
+</div>
 <div class="card">
 <div class="app-title-row">
 <img class="app-thumbnail-logo" src="fore-thumbnail-logo.png" alt="FORE! logo">
@@ -347,6 +372,7 @@ h1{font-size:34px;letter-spacing:.04em}
 
 <div id="chipInterface" class="chip-interface mode-hidden">
 <div class="chip-shot-ring">
+<button class="chip-target-miss" type="button" aria-label="Target miss" onclick="recordChipTargetMiss()"><span class="chip-target-miss-label">Miss</span></button>
 <button class="chip-target-ring chip-outer-ring" type="button" aria-label="Missed chip" onclick="recordChipMissed()"></button>
 <button class="chip-target-ring chip-inner-ring" type="button" aria-label="Made chip" onclick="recordChipMade()"></button>
 <button class="chip-gimme" type="button" aria-label="Gimme chip" onclick="recordChipGimme()">GIMME<span id="chipGimmeSubtext" class="chip-gimme-subtext">(2ft)</span></button>
@@ -556,7 +582,7 @@ const PUTT_PGA_TOUR_AVG=buildPuttPgaTourAverage()
 const DEFAULT_TARGET_SET_MODE="wedge"
 const TARGET_SET_MODES=["wedge","range"]
 const PLAY_MODES=["range","wedge","chip","putt"]
-const CLUB_SETUP_MODES=["range","wedge","chip"]
+const CLUB_SETUP_MODES=["range","wedge","chip","putt"]
 const YARDAGE_SETUP_MODES=["range","wedge"]
 const NEXT_PLAY_MODE={range:"wedge",wedge:"chip",chip:"putt",putt:"range"}
 const DEFAULT_CLUB=MODE_CONFIG.wedge.defaultClub
@@ -637,6 +663,7 @@ let practiceMode="manual"
 let playPersonalBests={range:0,wedge:0,chip:0,putt:0}
 let playGame={mode:null,queue:[],index:0,points:0,targetPoints:0,results:[]}
 let playRulesVisible=true
+let pendingClubDeletion=""
 let targetSetMode=DEFAULT_TARGET_SET_MODE
 let rangeWindSpeed=0
 let rangeTemperature=RANGE_DEFAULT_TEMP
@@ -875,11 +902,18 @@ function normalizeCarryYardages(saved){
  return map
 }
 function readStoredObject(key){try{const value=JSON.parse(localStorage.getItem(key));return value&&typeof value==="object"?value:null}catch{return null}}
+function getBuiltInClubDefaultVisibility(mode){
+ const visibility={}
+ ALL_CLUBS.forEach(club=>{visibility[club]=mode==="range" ? true : mode==="putt" ? false : isWedgeToggleClub(club)})
+ return visibility
+}
 function loadDefaultClubVisibilityByMode(){
  const saved=readStoredObject(CLUB_DEFAULT_VISIBILITY_BY_MODE_KEY)
- const legacy=normalizeClubVisibility(readStoredObject(CLUB_DEFAULT_VISIBILITY_KEY))
+ const legacy=readStoredObject(CLUB_DEFAULT_VISIBILITY_KEY)
  return CLUB_SETUP_MODES.reduce((map,mode)=>{
-  map[mode]=normalizeClubVisibility(saved&&saved[mode],legacy)
+  const builtIn=getBuiltInClubDefaultVisibility(mode)
+  const fallback=legacy?normalizeClubVisibility(legacy,builtIn):builtIn
+  map[mode]=normalizeClubVisibility(saved&&saved[mode],fallback)
   return map
  },{})
 }
@@ -896,11 +930,11 @@ function loadClubVisibilityByMode(){
 }
 function persistClubVisibilityByMode(){localStorage.setItem(CLUB_VISIBILITY_BY_MODE_KEY,JSON.stringify(clubVisibilityByMode))}
 function saveDefaultClubVisibility(){
- CLUB_SETUP_MODES.forEach(mode=>{defaultClubVisibilityByMode[mode]=normalizeClubVisibility(defaultClubVisibility)})
+ if(CLUB_SETUP_MODES.includes(targetSetMode)) defaultClubVisibilityByMode[targetSetMode]=normalizeClubVisibility(defaultClubVisibility)
  persistDefaultClubVisibilityByMode()
 }
 function saveClubVisibility(){
- CLUB_SETUP_MODES.forEach(mode=>{clubVisibilityByMode[mode]=normalizeClubVisibility(clubVisibility,defaultClubVisibility)})
+ if(CLUB_SETUP_MODES.includes(targetSetMode)) clubVisibilityByMode[targetSetMode]=normalizeClubVisibility(clubVisibility,defaultClubVisibility)
  persistClubVisibilityByMode()
 }
 function loadDefaultDistanceVisibilityByMode(){
@@ -960,23 +994,29 @@ function saveDistanceSetupRange(){
  persistDistanceSetupRangeByMode()
 }
 function activateModeSetupState(mode=targetSetMode){
- const sharedDefaultClubVisibility=defaultClubVisibilityByMode.range||normalizeClubVisibility(null)
- const sharedClubVisibility=clubVisibilityByMode.range||normalizeClubVisibility(null,sharedDefaultClubVisibility)
- defaultClubVisibility=sharedDefaultClubVisibility
- clubVisibility=sharedClubVisibility
- CLUB_SETUP_MODES.forEach(setupMode=>{
-  defaultClubVisibilityByMode[setupMode]=defaultClubVisibility
-  clubVisibilityByMode[setupMode]=clubVisibility
- })
+ if(CLUB_SETUP_MODES.includes(mode)){
+  defaultClubVisibility=defaultClubVisibilityByMode[mode]||getBuiltInClubDefaultVisibility(mode)
+  clubVisibility=mode==="putt" ? getBuiltInClubDefaultVisibility("putt") : normalizeClubVisibility(defaultClubVisibility)
+  defaultClubVisibilityByMode[mode]=defaultClubVisibility
+  clubVisibilityByMode[mode]=clubVisibility
+ }
  if(YARDAGE_SETUP_MODES.includes(mode)){
   defaultDistanceVisibility=defaultDistanceVisibilityByMode[mode]||normalizeDistanceVisibility(null)
-  distanceVisibility=distanceVisibilityByMode[mode]||normalizeDistanceVisibility(null,defaultDistanceVisibility)
+  distanceVisibility=normalizeDistanceVisibility(defaultDistanceVisibility)
   defaultDistanceSetupRange=defaultDistanceSetupRangeByMode[mode]||{...DEFAULT_DISTANCE_SETUP_RANGE}
-  distanceSetupRange=distanceSetupRangeByMode[mode]||normalizeDistanceSetupRange(null,defaultDistanceSetupRange)
+  distanceSetupRange=normalizeDistanceSetupRange(defaultDistanceSetupRange)
   defaultDistanceVisibilityByMode[mode]=defaultDistanceVisibility
   distanceVisibilityByMode[mode]=distanceVisibility
   defaultDistanceSetupRangeByMode[mode]=defaultDistanceSetupRange
   distanceSetupRangeByMode[mode]=distanceSetupRange
+ }
+ if(mode==="chip"){
+  chipDistanceVisibility=normalizeChipDistanceVisibility(defaultChipDistanceVisibility)
+  chipDistanceSetupRange=normalizeChipDistanceSetupRange(defaultChipDistanceSetupRange)
+ }
+ if(mode==="putt"){
+  puttDistanceVisibility=normalizePuttDistanceVisibility(defaultPuttDistanceVisibility)
+  puttDistanceSetupRange=normalizePuttDistanceSetupRange(defaultPuttDistanceSetupRange)
  }
 }
 function loadCarryYardages(){try{return normalizeCarryYardages(JSON.parse(localStorage.getItem(CARRY_YARDAGES_KEY)))}catch{return normalizeCarryYardages(null)}}
@@ -1009,9 +1049,11 @@ function getModeConfig(mode=targetSetMode){return {defaultClub:MODE_CONFIG[mode]
 function getSelectableClubs(mode=targetSetMode){
  if(mode==="putt") return ["Putter"]
  const baseClubs=getModeBaseClubs(mode)
- const visibleClubs=baseClubs.filter(club=>clubVisibility[club]!==false)
+ const modeVisibility=mode===targetSetMode?clubVisibility:clubVisibilityByMode[mode]||clubVisibility
+ const modeDefaultVisibility=mode===targetSetMode?defaultClubVisibility:defaultClubVisibilityByMode[mode]||defaultClubVisibility
+ const visibleClubs=baseClubs.filter(club=>modeVisibility[club]!==false)
  if(visibleClubs.length) return visibleClubs
- const defaultClubs=baseClubs.filter(club=>defaultClubVisibility[club]!==false)
+ const defaultClubs=baseClubs.filter(club=>modeDefaultVisibility[club]!==false)
  return defaultClubs.length ? defaultClubs : baseClubs.slice()
 }
 function hasVisibleWedgeClubs(){return getSelectableClubs("wedge").length>0}
@@ -1138,13 +1180,32 @@ function shuffleItems(items){
  return shuffled
 }
 function getPlayDescription(){
- if(isRangeMode()) return "Range Challenge: 10 shots using random enabled clubs at their wind  and temperature adjusted carry distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt for a Duff, Shank, or Skull."
- if(isChipMode()) return "Up-and-Down Challenge: 9 balls - each shot uses a random enabled club and chip distance.\n\nScoring:\n• 3pts = Gimme\n• 1pt = Inner ring made\n• 0 pts = Outer ring miss\n• -1pt for each Duff, Shank, or Skull."
+ if(isRangeMode()) return "Range Challenge: 10 shots using random enabled clubs at their wind  and temperature adjusted carry distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
+ if(isChipMode()) return "Up-and-Down Challenge: 18 Chips - 3 balls from six different random enabled club selections and chip distances.\n\nScoring:\n• 3pts = Gimme\n• 2pts = Inner ring made\n• 1pt = Outer ring miss\n• 0 pts = Target miss\n• -1pt = Duff, Shank, or Skull."
  if(isPuttMode()) return "Pressure Putting: 18 putts - putt two balls per distance. Three distances from each range at random.\n\nRanges: Short (2-6ft), Mid-range (7-18ft), Lag Putts (>20ft).\n\nScoring:\n• 1pt = short putts MADE\n• 2pts = mid-range putts MADE\n• 3pts = >20ft putts MADE\n• 1pt = inside Lag Putt ring\n• 0 pts = any miss"
- return "Wedge Combine: 10 shots using any wedge and the enabled distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt for a Duff, Shank, or Skull."
+ return "Wedge Combine: 10 shots using any wedge and the enabled distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
 }
-function getPlayTargetPoints(){return isChipMode()?9:isPuttMode()?18:20}
-function showPlayModeWarning(message){window.alert(message)}
+function getPlayTargetPoints(){return isChipMode()?36:isPuttMode()?18:20}
+function showAppMessage(title,message,icon="⚠️"){
+ const modal=typeof document!=="undefined"&&typeof document.getElementById==="function"?$("appMessageModal"):null
+ if(!modal){if(typeof window!=="undefined"&&typeof window.alert==="function")window.alert(message);return}
+ $("appMessageModalTitle").textContent=title
+ $("appMessageModalMessage").textContent=message
+ $("appMessageModalIcon").textContent=icon
+ modal.classList.add("open")
+ modal.setAttribute("aria-hidden","false")
+ const closeButton=$("closeAppMessageBtn")
+ if(closeButton&&typeof closeButton.focus==="function") closeButton.focus()
+}
+function closeAppMessage(){
+ const modal=$("appMessageModal")
+ if(!modal)return
+ modal.classList.remove("open")
+ modal.setAttribute("aria-hidden","true")
+}
+function handleAppMessageKeydown(event){if(event.key==="Escape"){event.preventDefault();closeAppMessage()}}
+function showPlayModeWarning(message){showAppMessage("Play Mode Setup",message,"⚠️")}
+function showPlayModeCompletion(message){showAppMessage("Challenge Complete!",message,"🏆")}
 function getRandomPlayTargets(mode,count){
  if(mode==="range") return getRandomRangePlayTargets(count)
  const clubs=(mode==="wedge"?getSelectableClubs("wedge").filter(isWedgePlayClub):getSelectableClubs(mode)).slice()
@@ -1192,9 +1253,20 @@ function buildPuttPlayQueue(){
  })))
  return shuffleItems(pairs).flatMap(prompt=>[{...prompt},{...prompt}])
 }
+function buildChipPlayQueue(){
+ const clubs=getSelectableClubs("chip")
+ const distances=getSelectableDistances("chip")
+ const prompts=[]
+ clubs.forEach(club=>distances.forEach(distance=>prompts.push({club,distance})))
+ if(prompts.length<6){
+  showPlayModeWarning("Up-and-Down Challenge needs at least 6 different enabled club and chip-distance combinations. Please update Club Setup or Distance Setup before turning on Play Mode.")
+  return null
+ }
+ return shuffleItems(prompts).slice(0,6).flatMap(prompt=>[{...prompt},{...prompt},{...prompt}])
+}
 function buildPlayQueue(){
  if(isPuttMode()) return buildPuttPlayQueue()
- if(isChipMode()) return getRandomPlayTargets("chip",9)
+ if(isChipMode()) return buildChipPlayQueue()
  return getRandomPlayTargets(targetSetMode,10)
 }
 function startPlayModeGame(){
@@ -1215,7 +1287,7 @@ function getPlayShotPoints(shot){
  if(!shot) return 0
  if(shot.targetSetMode==="chip"){
   const type=shot.chip&&shot.chip.type
-  return ["duff","shank","skull"].includes(type)?-1:type==="gimme"?3:type==="made"?1:0
+  return ["duff","shank","skull"].includes(type)?-1:type==="gimme"?3:type==="made"?2:type==="missed"?1:0
  }
  if(shot.targetSetMode==="putt"){
   if(shot.putt&&shot.putt.type==="lagMade") return 1
@@ -1236,7 +1308,7 @@ function renderPlayBadge(){
  const attemptLabel=isPuttMode()?"Putts Taken":isChipMode()?"Chips Taken":"Shots Taken"
  const attempts=playGame.results.length
  badge.className="badge random-badge"
- badge.innerHTML='<div class="badge-content">🎯 Target Points: '+playGame.targetPoints+'<br>📊 '+attemptLabel+': '+attempts+'<br>🏅 Points Scored: '+playGame.points+'<br>🏆 Personal Best: '+(playPersonalBests[targetSetMode]||0)+"</div>"
+ badge.innerHTML='<div class="badge-content">🎯 Target Points: '+playGame.targetPoints+'<br>'+attemptLabel+': '+attempts+'<br>🏅 Points Scored: '+playGame.points+'<br>🏆 Personal Best: '+(playPersonalBests[targetSetMode]||0)+"</div>"
 }
 function advancePlayGame(shot){
  if(!isPlayMode()||playGame.mode!==targetSetMode||!playGame.queue.length){startPlayModeGame();return}
@@ -1253,7 +1325,7 @@ function advancePlayGame(shot){
  const priorBest=playPersonalBests[targetSetMode]||0
  if(finalScore>priorBest){playPersonalBests[targetSetMode]=finalScore;savePlayPersonalBests()}
  renderPlayBadge()
- showPlayModeWarning("Challenge complete! You scored "+finalScore+" of "+playGame.targetPoints+" points."+(finalScore>priorBest?" New personal best!":""))
+ showPlayModeCompletion("You scored "+finalScore+" of "+playGame.targetPoints+" points."+(finalScore>priorBest?" New personal best!":""))
  startPlayModeGame()
 }
 function getShotTargetMode(shot){return shot.targetSetMode||"wedge"}
@@ -1412,7 +1484,7 @@ function createStatBucket(trackerKey){return {made:0,missed:0,duffs:0,shanks:0,s
 function createDistanceMap(factory){const map={};ALL_DISTANCES.forEach(d=>{map[d]=factory()});return map}
 function createClubDistanceMap(factory){const map={};ALL_CLUBS.forEach(club=>{map[club]=createDistanceMap(factory)});return map}
 function createModeMap(factory){const map={};TARGET_SET_MODES.forEach(mode=>{map[mode]=createClubDistanceMap(factory)});return map}
-function createChipStatBucket(){return {made:0,missed:0,gimmes:0,duffs:0,shanks:0,skulls:0}}
+function createChipStatBucket(){return {made:0,missed:0,gimmes:0,targetMisses:0,duffs:0,shanks:0,skulls:0}}
 function createChipDistanceMap(factory){const map={};CHIP_DISTANCES.forEach(distance=>{map[distance]=factory()});return map}
 function createChipClubDistanceMap(factory){const map={};ALL_CLUBS.forEach(club=>{map[club]=createChipDistanceMap(factory)});return map}
 function createPuttMissDir(){return {shortLeft:0,longRight:0,longLeft:0,shortRight:0}}
@@ -1427,6 +1499,7 @@ function ensureChipStatsShape(obj){
    made:Number(bucket.made)||0,
    missed:Number(bucket.missed)||0,
    gimmes:Number(bucket.gimmes)||0,
+   targetMisses:Number(bucket.targetMisses)||0,
    duffs:Number(bucket.duffs)||0,
    shanks:Number(bucket.shanks)||0,
    skulls:Number(bucket.skulls)||0
@@ -1950,19 +2023,20 @@ function summarizeShotResults(history,trackerKey){
 }
 function isMadeChipType(type){return type==="made"||type==="gimme"}
 function summarizeChipShotResults(history){
- let made=0,missed=0,gimmes=0,duffs=0,shanks=0,skulls=0
+ let made=0,missed=0,gimmes=0,targetMisses=0,duffs=0,shanks=0,skulls=0
  history.forEach(shot=>{
   const type=shot&&shot.chip&&shot.chip.type
   if(isMadeChipType(type)){made++;if(type==="gimme")gimmes++;return}
   if(!type) return
   missed++
+  if(type==="targetMiss")targetMisses++
   if(type==="duff")duffs++
   if(type==="shank")shanks++
   if(type==="skull")skulls++
  })
  const misHits=duffs+shanks+skulls
  const misses=Math.max(0,missed-misHits)
- return {made,misses,missed,misHits,gimmes,duffs,shanks,skulls,total:made+missed}
+ return {made,misses,missed,misHits,gimmes,targetMisses,duffs,shanks,skulls,total:made+missed}
 }
 function summarizePuttShotResults(history){
  let made=0,missed=0,lagMade=0
@@ -1998,12 +2072,13 @@ function summarizeStats(statsMap){
  return {made:totalMade,missed:totalMissed,total,pct:total?Math.round(totalMade/total*100):0}
 }
 function summarizeChipStats(statsMap){
- let made=0,missed=0,gimmes=0,duffs=0,shanks=0,skulls=0
+ let made=0,missed=0,gimmes=0,targetMisses=0,duffs=0,shanks=0,skulls=0
  ALL_CLUBS.forEach(club=>CHIP_DISTANCES.forEach(distance=>{
   const bucket=statsMap&&statsMap[club]&&statsMap[club][distance]||{}
   made+=bucket.made||0
   missed+=bucket.missed||0
   gimmes+=bucket.gimmes||0
+  targetMisses+=bucket.targetMisses||0
   duffs+=bucket.duffs||0
   shanks+=bucket.shanks||0
  skulls+=bucket.skulls||0
@@ -2011,7 +2086,7 @@ function summarizeChipStats(statsMap){
  const total=made+missed
  const misHits=duffs+shanks+skulls
  const misses=Math.max(0,missed-misHits)
- return {made,misses,missed,misHits,gimmes,duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
+ return {made,misses,missed,misHits,gimmes,targetMisses,duffs,shanks,skulls,total,pct:total?Math.round(made/total*100):0}
 }
 function summarizePuttStats(statsMap){
  let made=0,missed=0,lagMade=0
@@ -2169,9 +2244,9 @@ function stripClubFromModeMap(modeMap,club){TARGET_SET_MODES.forEach(mode=>{if(m
 function addClubToCatalog(name,value){
  const club=normalizeClubName(name)
  const carryValue=Math.round(Number(value))
- if(!club){alert("Enter a club name.");return}
- if(!Number.isFinite(carryValue)||carryValue<=0){alert("Enter a valid carry yardage.");return}
- if(ALL_CLUBS.some(existing=>existing.toLowerCase()===club.toLowerCase())){alert("That club already exists.");return}
+ if(!club){showAppMessage("Club Setup","Enter a club name.");return}
+ if(!Number.isFinite(carryValue)||carryValue<=0){showAppMessage("Club Setup","Enter a valid carry yardage.");return}
+ if(ALL_CLUBS.some(existing=>existing.toLowerCase()===club.toLowerCase())){showAppMessage("Club Setup","That club already exists.");return}
  carryYardages[club]=carryValue
  setClubCatalog([...ALL_CLUBS,club])
  CLUB_SETUP_MODES.forEach(mode=>{
@@ -2189,7 +2264,29 @@ function addClubToCatalog(name,value){
  applySetupChanges()
 }
 function deleteClub(club){
- if(!confirm("Remove "+formatClubLabel(club)+" from the app and its tracking history?")) return
+ const modal=$("deleteClubModal")
+ if(!modal){if(typeof confirm==="function"&&confirm("Remove "+formatClubLabel(club)+" from the app and its tracking history?")) performDeleteClub(club);return}
+ pendingClubDeletion=club
+ $("deleteClubModalMessage").textContent="Remove "+formatClubLabel(club)+" from the app and its tracking history? This action cannot be undone."
+ modal.classList.add("open")
+ modal.setAttribute("aria-hidden","false")
+ const confirmButton=$("confirmDeleteClubBtn")
+ if(confirmButton&&typeof confirmButton.focus==="function") confirmButton.focus()
+}
+function closeDeleteClubWarning(){
+ const modal=$("deleteClubModal")
+ if(!modal)return
+ modal.classList.remove("open")
+ modal.setAttribute("aria-hidden","true")
+ pendingClubDeletion=""
+}
+function handleDeleteClubWarningKeydown(event){if(event.key==="Escape"){event.preventDefault();closeDeleteClubWarning()}}
+function confirmDeleteClub(){
+ const club=pendingClubDeletion
+ closeDeleteClubWarning()
+ if(club) performDeleteClub(club)
+}
+function performDeleteClub(club){
  setClubCatalog(ALL_CLUBS.filter(existing=>existing!==club))
  delete carryYardages[club]
  CLUB_SETUP_MODES.forEach(mode=>{
@@ -2422,6 +2519,7 @@ function commitSetupPanelPendingValues(){
  if(carryChanged||rangeChanged) applySetupChanges()
 }
 function toggleSetupPanel(panel){
+ if(isPuttMode()&&panel==="clubs") return
  const isClosingActivePanel=activeSetupPanel===panel
  commitSetupPanelPendingValues()
  if(isClosingActivePanel){
@@ -2790,8 +2888,10 @@ function renderSetupPanel(){
  const distanceButton=$("distanceSetupBtn")
  if(!panel||!clubButton||!distanceButton) return
  lastSetupPanelViewportWidth=getViewportWidth()
- clubButton.disabled=false
- clubButton.className="mode-btn"+(activeSetupPanel==="clubs"?" active":"")
+ const puttActive=isPuttMode()
+ if(puttActive&&activeSetupPanel==="clubs") activeSetupPanel=""
+ clubButton.disabled=puttActive
+ clubButton.className="mode-btn"+(puttActive?" club-disabled":activeSetupPanel==="clubs"?" active":"")
  distanceButton.className="mode-btn"+(activeSetupPanel==="distances"?" active":"")
  if(!activeSetupPanel){
   panel.className="setup-panel"
@@ -3127,6 +3227,7 @@ function toggleTargetSetMode(){
  clearPendingSelections()
  commitSetupPanelPendingValues()
  targetSetMode=NEXT_PLAY_MODE[targetSetMode]||"range"
+ if(targetSetMode==="putt"&&activeSetupPanel==="clubs") activeSetupPanel=""
  activateModeSetupState(targetSetMode)
  persistLiveState()
  if(isPlayMode()){
@@ -3241,6 +3342,7 @@ function applyChipResultToStatsMap(statsMap,result,club,distance){
   return
  }
  bucket.missed++
+ if(result.type==="targetMiss") bucket.targetMisses=(bucket.targetMisses||0)+1
  if(result.type==="duff") bucket.duffs++
  if(result.type==="shank") bucket.shanks++
  if(result.type==="skull") bucket.skulls++
@@ -3405,6 +3507,7 @@ function recordContactMissed(dir){pendingShot.contact={type:"missed",dir};tryCom
 function recordChipMade(){commitChipShot("made")}
 function recordChipGimme(){commitChipShot("gimme")}
 function recordChipMissed(){commitChipShot("missed")}
+function recordChipTargetMiss(){commitChipShot("targetMiss")}
 function setPuttLagFollowUpDistance(){
  const sourceDistance=Number(currentDistance)
  const lagDistance=getLagPuttDistance(sourceDistance)
@@ -3742,7 +3845,7 @@ function exportHistoryCSV(){
   const emptyPuttColumns=()=>Array(10).fill("")
  pushRow([
   "Session","Date","Club","Distance","Unit","Mode","Wind","Temp","Target ft",
-  "Made","Gimmes","Missed","Total Unsuccessful","Make %","Up and Down %",
+  "Made","Gimmes / Target Misses","Missed","Total Unsuccessful","Make %","Up and Down %",
   ...getTrackerMissCsvHeaders("accuracy","Accuracy"),
   "Center","Off-Center","Flush %",...getTrackerMissCsvHeaders("contact","Contact"),
   "Best Streak","Duffs","Shanks","Skulls","Mis-Hits",
@@ -3752,7 +3855,7 @@ function exportHistoryCSV(){
  if(shotHistory.length){
   exportSessions.push(buildSessionSnapshotFromShots(shotHistory))
  }
- const grandChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
+ const grandChip={made:0,gimmes:0,targetMisses:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
   const grandPutt={made:0,missed:0,lagMade:0,missDir:createPuttMissDir()}
  exportSessions.forEach((session,index)=>{
   const date=new Date(session.date).toLocaleDateString()
@@ -3831,9 +3934,9 @@ function exportHistoryCSV(){
    ])
   }
 
-  const sessionChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
+  const sessionChip={made:0,gimmes:0,targetMisses:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0}
   ALL_CLUBS.forEach(club=>{
-   const clubChip={made:0,gimmes:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0,best:0}
+   const clubChip={made:0,gimmes:0,targetMisses:0,misses:0,missed:0,duffs:0,shanks:0,skulls:0,best:0}
    CHIP_DISTANCES.forEach(distance=>{
     const bucket=session.chipStats[club][distance]
     const made=bucket.made||0
@@ -3841,6 +3944,7 @@ function exportHistoryCSV(){
     const total=made+missed
     if(!total) return
     const gimmes=bucket.gimmes||0
+    const targetMisses=bucket.targetMisses||0
     const duffs=bucket.duffs||0
     const shanks=bucket.shanks||0
     const skulls=bucket.skulls||0
@@ -3851,6 +3955,7 @@ function exportHistoryCSV(){
     Object.assign(clubChip,{
      made:clubChip.made+made,
      gimmes:clubChip.gimmes+gimmes,
+     targetMisses:clubChip.targetMisses+targetMisses,
      misses:clubChip.misses+misses,
      missed:clubChip.missed+missed,
      duffs:clubChip.duffs+duffs,
@@ -3860,7 +3965,7 @@ function exportHistoryCSV(){
     })
     pushRow([
      index+1,date,formatClubLabel(club),distance+"ft","ft","Chip","","",formatPercent(getTargetFeet(distance,"chip")),
-     made,gimmes,misses,missed,pct+"%",formatPercent(getUpAndDownValue(distance,"chip"))+"%",
+     made,gimmes+" / "+targetMisses,misses,missed,pct+"%",formatPercent(getUpAndDownValue(distance,"chip"))+"%",
      ...emptyAccuracyAndContact(),
      best,duffs,shanks,skulls,duffs+shanks+skulls,
      ...emptyPuttColumns()
@@ -3872,7 +3977,7 @@ function exportHistoryCSV(){
    const clubMisHits=clubChip.duffs+clubChip.shanks+clubChip.skulls
    pushRow([
     index+1,date,formatClubLabel(club),"TOTAL","ft","Chip","","","",
-    clubChip.made,clubChip.gimmes,clubChip.misses,clubChip.missed,clubPct+"%","",
+    clubChip.made,clubChip.gimmes+" / "+clubChip.targetMisses,clubChip.misses,clubChip.missed,clubPct+"%","",
     ...emptyAccuracyAndContact(),
     clubChip.best,
     fmt(clubChip.duffs,clubMisHits?Math.round(clubChip.duffs/clubMisHits*100):0),
@@ -3889,7 +3994,7 @@ function exportHistoryCSV(){
    const sessionChipMisHits=sessionChip.duffs+sessionChip.shanks+sessionChip.skulls
    pushRow([
     index+1,date,"ALL","TOTAL","ft","Chip","","","",
-    sessionChip.made,sessionChip.gimmes,sessionChip.misses,sessionChip.missed,sessionChipPct+"%","",
+    sessionChip.made,sessionChip.gimmes+" / "+sessionChip.targetMisses,sessionChip.misses,sessionChip.missed,sessionChipPct+"%","",
     ...emptyAccuracyAndContact(),
     "",
     fmt(sessionChip.duffs,sessionChipMisHits?Math.round(sessionChip.duffs/sessionChipMisHits*100):0),
@@ -3950,7 +4055,7 @@ function exportHistoryCSV(){
   const grandChipMisHits=grandChip.duffs+grandChip.shanks+grandChip.skulls
   pushRow([
    "GRAND TOTAL","","ALL","ALL","ft","Chip","","","",
-   grandChip.made,grandChip.gimmes,grandChip.misses,grandChip.missed,grandChipPct+"%","",
+   grandChip.made,grandChip.gimmes+" / "+grandChip.targetMisses,grandChip.misses,grandChip.missed,grandChipPct+"%","",
    ...emptyAccuracyAndContact(),
    "",
    fmt(grandChip.duffs,grandChipMisHits?Math.round(grandChip.duffs/grandChipMisHits*100):0),
@@ -4066,7 +4171,7 @@ function renderHistory(){
   }
   if(chipTotals.total){
    summaryHtml+=
-    '<br><span class="subtle"><strong>Chip:</strong> Made: '+chipTotals.made+' | Gimmes: '+chipTotals.gimmes+' | Missed: '+chipTotals.misses+' | Mis-Hits: '+chipTotals.misHits+'</span>'+
+    '<br><span class="subtle"><strong>Chip:</strong> Made: '+chipTotals.made+' | Gimmes: '+chipTotals.gimmes+' | Target Misses: '+chipTotals.targetMisses+' | Missed: '+chipTotals.misses+' | Mis-Hits: '+chipTotals.misHits+'</span>'+
      '<br><span class="subtle">Make %: '+chipTotals.pct+'% | Mis-Hits - Duffs: '+chipTotals.duffs+' | Shanks: '+chipTotals.shanks+' | Skulls: '+chipTotals.skulls+'</span>'
   }
    if(puttTotals.total||puttTotals.lagPutts){
@@ -4146,7 +4251,7 @@ function renderHistory(){
     const row=document.createElement("div")
     row.className="history-block"
     row.innerHTML="<strong>"+formatClubLabel(club)+" - "+distance+"ft (Chip):</strong> "+(bucket.made||0)+"/"+total+" ("+pct+"%) - "+formatPercent(getTargetFeet(distance,"chip"))+"ft"+earnedMark+
-     '<br><span class="subtle">Up and Down: '+formatPercent(upAndDown)+'% | Gimmes: '+(bucket.gimmes||0)+' | Missed: '+misses+' | Mis-Hits: '+misHits+'</span>'+
+     '<br><span class="subtle">Up and Down: '+formatPercent(upAndDown)+'% | Gimmes: '+(bucket.gimmes||0)+' | Target Misses: '+(bucket.targetMisses||0)+' | Missed: '+misses+' | Mis-Hits: '+misHits+'</span>'+
      '<br><span class="subtle">Mis-Hits - Duffs: '+(bucket.duffs||0)+' | Shanks: '+(bucket.shanks||0)+' | Skulls: '+(bucket.skulls||0)+' | Best Streak: '+best+'</span>'
     accordion.appendChild(row)
    })
@@ -4174,12 +4279,12 @@ function initApp(){
  defaultChipDistanceSetupRange=loadDefaultChipDistanceSetupRange()
  defaultPuttDistanceVisibility=loadDefaultPuttDistanceVisibility()
  defaultPuttDistanceSetupRange=loadDefaultPuttDistanceSetupRange()
- activateModeSetupState(targetSetMode)
  chipDistanceVisibility=loadChipDistanceVisibility()
  chipDistanceSetupRange=loadChipDistanceSetupRange()
  puttDistanceVisibility=loadPuttDistanceVisibility()
  puttDistanceSetupRange=loadPuttDistanceSetupRange()
  carryYardages=loadCarryYardages()
+ activateModeSetupState(targetSetMode)
  TRACKER_KEYS.forEach(trackerKey=>{
   statsMapByTracker[trackerKey]=loadTrackerStats(trackerKey)
   streaksByTracker[trackerKey]=loadTrackerStreaks(trackerKey)
