@@ -79,6 +79,8 @@ h1{font-size:34px;letter-spacing:.04em}
 .range-wind-temp-tab.beside-rules{left:76px;z-index:1}
 .range-wind-temp-content{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:4px}
 .range-wind-temp-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+.range-wind-temp-default-actions{position:absolute;left:9px;bottom:8px;display:flex;gap:8px}
+.range-wind-temp-default-actions .setup-mini-btn{padding:5px 9px;font-size:14px;box-shadow:0 2px 0 #1e9e54}
 .play-rules-hide{position:absolute;right:9px;bottom:8px;border:none;border-radius:8px;padding:5px 10px;background:#8a8a8a;color:#000;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 #666}
 .mode-btn.play-active{background:#0096FF;color:#000;box-shadow:0 4px 0 #0074c7}
 .setup-panel{display:none;margin-top:12px;padding:12px;border-radius:12px;background:#145a43;box-sizing:border-box}
@@ -595,6 +597,8 @@ const PLAY_PERSONAL_BESTS_KEY=APP_STORAGE_PREFIX+"_playPersonalBests"
 const TARGET_SET_MODE_KEY=APP_STORAGE_PREFIX+"_targetSetMode"
 const RANGE_WIND_SPEED_KEY=APP_STORAGE_PREFIX+"_rangeWindSpeed"
 const RANGE_TEMP_KEY=APP_STORAGE_PREFIX+"_rangeTemp"
+const RANGE_WIND_SPEED_DEFAULT_KEY=APP_STORAGE_PREFIX+"_rangeWindSpeedDefault"
+const RANGE_TEMP_DEFAULT_KEY=APP_STORAGE_PREFIX+"_rangeTempDefault"
 const SHOT_HISTORY_KEY=APP_STORAGE_PREFIX+"_shotHistory"
 const SELECTION_STATE_KEY=APP_STORAGE_PREFIX+"_selectionState"
 const SESSIONS_KEY=APP_STORAGE_PREFIX+"_sessions"
@@ -672,6 +676,8 @@ let pendingClubDeletion=""
 let targetSetMode=DEFAULT_TARGET_SET_MODE
 let rangeWindSpeed=0
 let rangeTemperature=RANGE_DEFAULT_TEMP
+let defaultRangeWindSpeed=0
+let defaultRangeTemperature=RANGE_DEFAULT_TEMP
 let modeSelections={
  wedge:{club:MODE_CONFIG.wedge.defaultClub,distance:MODE_CONFIG.wedge.defaultDistance},
  chip:{club:MODE_CONFIG.chip.defaultClub,distance:MODE_CONFIG.chip.defaultDistance},
@@ -1639,10 +1645,18 @@ function loadPuttStreaks(){try{return ensurePuttCounterShape(JSON.parse(localSto
 function savePuttStreaks(){localStorage.setItem(PUTT_STREAKS_KEY,JSON.stringify(puttStreaks))}
 function loadPuttBestStreaks(){try{return ensurePuttCounterShape(JSON.parse(localStorage.getItem(PUTT_BEST_STREAKS_KEY)))}catch{return defaultPuttCounters()}}
 function savePuttBestStreaks(){localStorage.setItem(PUTT_BEST_STREAKS_KEY,JSON.stringify(puttBestStreaks))}
-function loadRangeWindSpeed(){try{const saved=Number(localStorage.getItem(RANGE_WIND_SPEED_KEY));if(!Number.isFinite(saved))return 0;return Math.max(-25,Math.min(25,saved))}catch{return 0}}
+function normalizeRangeWindSpeed(value,fallback=0){if(value===null||value==="")return fallback;const numeric=Number(value);return Number.isFinite(numeric)?Math.max(-25,Math.min(25,numeric)):fallback}
+function normalizeRangeTemperature(value,fallback=RANGE_DEFAULT_TEMP){if(value===null||value==="")return fallback;const numeric=Number(value);return Number.isFinite(numeric)?Math.max(RANGE_TEMP_MIN,Math.min(RANGE_TEMP_MAX,numeric)):fallback}
+function loadRangeWindSpeed(){try{return normalizeRangeWindSpeed(localStorage.getItem(RANGE_WIND_SPEED_KEY))}catch{return 0}}
 function saveRangeWindSpeed(){localStorage.setItem(RANGE_WIND_SPEED_KEY,rangeWindSpeed)}
-function loadRangeTemperature(){try{const saved=Number(localStorage.getItem(RANGE_TEMP_KEY));if(!Number.isFinite(saved))return RANGE_DEFAULT_TEMP;return Math.max(RANGE_TEMP_MIN,Math.min(RANGE_TEMP_MAX,saved))}catch{return RANGE_DEFAULT_TEMP}}
+function loadRangeTemperature(){try{return normalizeRangeTemperature(localStorage.getItem(RANGE_TEMP_KEY))}catch{return RANGE_DEFAULT_TEMP}}
 function saveRangeTemperature(){localStorage.setItem(RANGE_TEMP_KEY,rangeTemperature)}
+function loadDefaultRangeWindSpeed(){try{return normalizeRangeWindSpeed(localStorage.getItem(RANGE_WIND_SPEED_DEFAULT_KEY))}catch{return 0}}
+function saveDefaultRangeWindSpeed(){localStorage.setItem(RANGE_WIND_SPEED_DEFAULT_KEY,defaultRangeWindSpeed)}
+function loadDefaultRangeTemperature(){try{return normalizeRangeTemperature(localStorage.getItem(RANGE_TEMP_DEFAULT_KEY))}catch{return RANGE_DEFAULT_TEMP}}
+function saveDefaultRangeTemperature(){localStorage.setItem(RANGE_TEMP_DEFAULT_KEY,defaultRangeTemperature)}
+function resetRangeWindTempToDefault(){rangeWindSpeed=defaultRangeWindSpeed;rangeTemperature=defaultRangeTemperature;persistLiveState();refreshRangeRecommendation();showDefaultConfirmation("Default Loaded","loaded")}
+function saveCurrentRangeWindTempAsDefault(){defaultRangeWindSpeed=rangeWindSpeed;defaultRangeTemperature=rangeTemperature;saveDefaultRangeWindSpeed();saveDefaultRangeTemperature();showDefaultConfirmation("Default Saved","saved")}
 function normalizeSelectionState(saved){
  const wedge=saved&&saved.wedge ? saved.wedge : {}
  const range=saved&&saved.range ? saved.range : {}
@@ -3071,12 +3085,25 @@ function renderPracticeMode(){
    windTempTab.onclick=toggleRangeWindTemp
    playDescription.appendChild(windTempTab)
    if(rangeWindTempVisible){
+    const defaultActions=document.createElement("div")
+    defaultActions.className="range-wind-temp-default-actions"
+    const defaultButton=document.createElement("button")
+    defaultButton.type="button"
+    defaultButton.className="setup-mini-btn"
+    defaultButton.textContent="Default"
+    defaultButton.onclick=resetRangeWindTempToDefault
+    const saveDefaultButton=document.createElement("button")
+    saveDefaultButton.type="button"
+    saveDefaultButton.className="setup-mini-btn"
+    saveDefaultButton.textContent="Save As Default"
+    saveDefaultButton.onclick=saveCurrentRangeWindTempAsDefault
+    defaultActions.append(defaultButton,saveDefaultButton)
     const windTempHideButton=document.createElement("button")
     windTempHideButton.type="button"
     windTempHideButton.className="play-rules-hide"
     windTempHideButton.textContent="Hide"
     windTempHideButton.onclick=hideRangeWindTemp
-    playDescription.append(createRangeWindTempControls(),windTempHideButton)
+    playDescription.append(createRangeWindTempControls(),defaultActions,windTempHideButton)
    }
   }
   const showPanel=playActive||rangeActive
@@ -4392,8 +4419,10 @@ function initApp(){
  rangeSelections=selectionState.range
  practiceMode=loadPracticeMode()
  playPersonalBests=loadPlayPersonalBests()
- rangeWindSpeed=0
- rangeTemperature=RANGE_DEFAULT_TEMP
+ rangeWindSpeed=loadRangeWindSpeed()
+ rangeTemperature=loadRangeTemperature()
+ defaultRangeWindSpeed=loadDefaultRangeWindSpeed()
+ defaultRangeTemperature=loadDefaultRangeTemperature()
  syncSelectionsToConfiguration()
  persistLiveState()
  if(practiceMode==="play") startPlayModeGame()
