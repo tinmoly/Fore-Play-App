@@ -54,7 +54,8 @@ h1{font-size:34px;letter-spacing:.04em}
 .range-temp-stepper{gap:0;padding:6px 4px}
 .range-speed-btn{border:none;border-radius:999px;background:#2ecc71;color:#000;font-size:22px;font-weight:800;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #1e9e54}
 
-.mode-card{margin-bottom:14px;padding:12px;border-radius:12px;background:#0e4f3a}
+.mode-card{margin-bottom:14px;padding:0;background:transparent}
+.mode-controls-panel{padding:12px;border-radius:12px;background:#0e4f3a}
 .mode-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;width:100%}
 .mode-row.equal-buttons{flex-wrap:nowrap}
 .mode-row.equal-buttons .mode-btn{flex:1;min-width:0}
@@ -72,13 +73,17 @@ h1{font-size:34px;letter-spacing:.04em}
 .play-mode-description{display:none;position:relative;margin:38px 0 0;padding:10px 12px 42px;border-radius:0 10px 10px 10px;background:#145a43;color:#fff;font-size:15px;line-height:1.35;text-align:center}
 .play-mode-description.active{display:block}
 .play-mode-description.play-description-left{text-align:left}
-.play-mode-description.play-rules-collapsed{height:0;margin:38px 0 0;padding:0;background:transparent;overflow:visible}
+.play-mode-description.play-rules-collapsed{height:auto;min-height:24px;margin:38px 0 0;padding:0;background:transparent;overflow:visible}
 .play-mode-description.play-rules-collapsed .play-mode-description-copy,.play-mode-description.play-rules-collapsed .play-rules-hide{display:none}
 .play-mode-description-copy{display:block;white-space:pre-line}
 .play-rules-tab{position:absolute;top:-30px;left:0;z-index:2;border:none;border-radius:10px 10px 0 0;padding:7px 18px;background:#145a43;color:#fff;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 -2px 0 #0e4f3a,3px 0 0 rgba(8,57,41,.62)}
-.mode-panel-tabs{position:absolute;top:-30px;left:0;display:flex;align-items:flex-end}
-.mode-panel-tabs .play-rules-tab{position:relative;top:auto;left:auto;margin-left:-2px}
+.mode-panel-tabs{position:relative;top:auto;left:auto;display:flex;flex-wrap:wrap;align-items:flex-end;width:calc(100% + 24px);max-width:calc(100% + 24px);box-sizing:border-box;margin:-20px -12px 10px}
+.mode-panel-tabs .play-rules-tab{position:relative;top:auto;left:auto;flex:0 1 auto;margin-left:-2px}
 .mode-panel-tabs .play-rules-tab:first-child{margin-left:0}
+.mode-panel-tabs .play-rules-tab:nth-child(1){z-index:4}
+.mode-panel-tabs .play-rules-tab:nth-child(2){z-index:3}
+.mode-panel-tabs .play-rules-tab:nth-child(3){z-index:2}
+.mode-panel-tabs .play-rules-tab:nth-child(4){z-index:1}
 .mode-panel-tab.active{background:#1c7c5b}
 .mode-tab-setup-content{margin-top:0}
 .setup-button-row{display:none}
@@ -331,6 +336,7 @@ h1{font-size:34px;letter-spacing:.04em}
 </div>
 
 <div class="mode-card">
+<div class="mode-controls-panel">
 <div class="mode-row equal-buttons setup-button-row">
 <button id="clubSetupBtn" class="mode-btn" type="button" onclick="toggleSetupPanel('clubs')">Club<br>Setup</button>
 <button id="distanceSetupBtn" class="mode-btn" type="button" onclick="toggleSetupPanel('distances')">Distance<br>Setup</button>
@@ -338,6 +344,7 @@ h1{font-size:34px;letter-spacing:.04em}
 <div class="mode-row equal-buttons settings-row">
 <button id="practiceModeBtn" class="mode-btn" onclick="togglePracticeMode()">Manual<br>Mode On</button>
 <button id="targetSetBtn" class="mode-btn target-set-btn" onclick="toggleTargetSetMode()">Wedge<br>Mode On</button>
+</div>
 </div>
 <div id="playModeDescription" class="play-mode-description" aria-live="polite"></div>
 <div id="setupPanel" class="setup-panel"></div>
@@ -2595,6 +2602,12 @@ function toggleSetupPanel(panel){
  }
  renderSetupPanel()
 }
+function hideSetupPanel(){
+ if(!activeSetupPanel) return
+ commitSetupPanelPendingValues()
+ activeSetupPanel=""
+ renderSetupPanel()
+}
 function getClubSetupColumnCount(panel){
  const panelWidth=Math.max(panel&&panel.clientWidth||0,panel&&panel.offsetWidth||0)
  if(!panelWidth) return 2
@@ -2978,10 +2991,10 @@ function renderSetupPanel(){
   tab.onclick=onClick
   tabs.appendChild(tab)
  }
- addTab("rules","Rules",playActive,togglePlayRules)
- addTab("windtemp","Wind/Temp",rangeActive,toggleRangeWindTemp)
- addTab("clubs","Clubs",!puttActive,()=>toggleSetupPanel("clubs"))
  addTab("distances","Distances",true,()=>toggleSetupPanel("distances"))
+ addTab("clubs","Clubs",!puttActive,()=>toggleSetupPanel("clubs"))
+ addTab("windtemp","Wind/Temp",rangeActive,toggleRangeWindTemp)
+ addTab("rules","Rules",playActive,togglePlayRules)
  panel.appendChild(tabs)
  if(activeTab==="rules"){
   const copy=document.createElement("span")
@@ -3020,9 +3033,15 @@ function renderSetupPanel(){
  if(activeTab==="clubs"||activeTab==="distances"){
   const content=document.createElement("div")
   content.className="mode-tab-setup-content"
+  const hideButton=document.createElement("button")
+  hideButton.type="button"
+  hideButton.className="play-rules-hide"
+  hideButton.textContent="Hide"
+  hideButton.onclick=hideSetupPanel
   panel.appendChild(content)
   if(activeTab==="clubs") renderClubSetupPanel(content)
   else renderDistanceSetupPanel(content)
+  panel.appendChild(hideButton)
  }
 }
 function handleWindowResize(){
