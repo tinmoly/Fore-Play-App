@@ -90,6 +90,7 @@ h1{font-size:34px;letter-spacing:.04em}
 .range-wind-temp-tab.beside-rules{left:76px;z-index:1}
 .range-wind-temp-content{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:4px}
 .range-wind-temp-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+.range-wind-temp-label{padding-left:12px;padding-right:12px}
 .range-wind-temp-default-actions{position:absolute;left:9px;bottom:8px;display:flex;gap:8px}
 .range-wind-temp-default-actions .setup-mini-btn{padding:5px 9px;font-size:14px;box-shadow:0 2px 0 #1e9e54}
 .play-rules-hide{position:absolute;right:9px;bottom:8px;border:none;border-radius:8px;padding:5px 10px;background:#8a8a8a;color:#000;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 #666}
@@ -1205,9 +1206,9 @@ function shuffleItems(items){
 }
 function getPlayDescription(){
  if(isRangeMode()) return "Range Challenge: 9 shots using random enabled clubs at their wind and temperature adjusted carry distances. 3 shots from each club type: wedges, irons, and hybrid/woods.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
- if(isChipMode()) return "Up-and-Down Challenge: 18 Chips - 3 balls from six different random enabled club selections and chip distances.\n\nScoring:\n• 3pts = Gimme\n• 2pts = Inner ring made\n• 1pt = Outer ring miss\n• 0 pts = Target miss\n• -1pt = Duff, Shank, or Skull."
- if(isPuttMode()) return "Pressure Putting: 18 putts - putt two balls per distance. Three distances from each range at random.\n\nRanges: Short (2-6ft), Mid-range (7-18ft), Lag Putts (>20ft).\n\nScoring:\n• 1pt = short putts MADE\n• 2pts = mid-range putts MADE\n• 3pts = >20ft putts MADE\n• 1pt = inside Lag Putt ring\n• 0 pts = any miss"
- return "Wedge Combine: 9 shots - 3 rounds, three shots each. Each round uses one random enabled wedge at three random enabled Wedge Mode distances.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
+ if(isChipMode()) return "Up-and-Down Challenge: 18 chips total. Hitting 3 balls each from 6 different random club selections and chip distances. Uses clubs and distances enabled in Chip Mode only.\n\nScoring:\n• 3pts = Gimme\n• 2pts = Inner ring made\n• 1pt = Outer ring miss\n• 0 pts = Target miss\n• -1pt = Duff, Shank, or Skull."
+ if(isPuttMode()) return "Pressure Putting: 18 putts total. 9 rounds putting two balls per distance. Three distances randomly selected from each range below.\n\nRanges: Short (2-6ft), Mid-range (7-18ft), Lag Putts (>20ft).\n\nScoring:\n• 1pt = short putts MADE\n• 2pts = mid-range putts MADE\n• 3pts = >20ft putts MADE\n• 1pt = inside Lag Putt ring\n• 0 pts = any miss"
+ return "Wedge Combine: 9 shots total. 3 rounds of 3 shots each using the same wedge at randomly selected distances. Uses clubs and distances enabled in Wedge Mode only.\n\nScoring:\n• 3pts = MADE + SWEET SPOT\n• 2pts = MADE shot + Off-Center contact\n• 1pt = Flushed SWEET SPOT but missed target\n• 0 pts = Missed target & contact\n• -1pt = Duff, Shank, or Skull."
 }
 function getPlayTargetPoints(){return isChipMode()?36:18}
 function showAppMessage(title,message,icon="⚠️"){
@@ -3073,7 +3074,7 @@ function createRangeWindTempControls(){
  const windRow=document.createElement("div")
  windRow.className="range-wind-temp-row"
  const windLabel=document.createElement("button")
- windLabel.className="pill-btn";windLabel.textContent="Wind";windLabel.disabled=true
+ windLabel.className="pill-btn range-wind-temp-label";windLabel.textContent="Wind";windLabel.disabled=true
  const speedWrap=document.createElement("div")
  speedWrap.className="range-speed"
  const minusBtn=document.createElement("button")
@@ -3087,7 +3088,7 @@ function createRangeWindTempControls(){
  const tempRow=document.createElement("div")
  tempRow.className="range-wind-temp-row"
  const tempLabel=document.createElement("button")
- tempLabel.className="pill-btn";tempLabel.textContent="Temp";tempLabel.disabled=true
+ tempLabel.className="pill-btn range-wind-temp-label";tempLabel.textContent="Temp";tempLabel.disabled=true
  const tempWrap=document.createElement("div")
  tempWrap.className="range-speed range-temp-stepper"
  const tempMinusBtn=document.createElement("button")
