@@ -546,10 +546,10 @@ const ALL_CLUBS=BASE_CLUBS.slice()
 const ALL_DISTANCE_OPTIONS=Array.from({length:60},(_,i)=>(i+1)*5)
 const FIVE_YARD_INTERVALS=ALL_DISTANCE_OPTIONS.filter(distance=>distance%10===5)
 const TEN_YARD_INTERVALS=ALL_DISTANCE_OPTIONS.filter(distance=>distance%10===0)
-const WEDGE_DISTANCES=ALL_DISTANCE_OPTIONS.slice()
+const WEDGE_DISTANCES=ALL_DISTANCE_OPTIONS.filter(distance=>distance<=150)
 const RANGE_CLUBS=ALL_CLUBS.slice()
 const RANGE_MANUAL_CLUBS=ALL_CLUBS.slice()
-const RANGE_DISTANCES=ALL_DISTANCE_OPTIONS.slice()
+const RANGE_DISTANCES=ALL_DISTANCE_OPTIONS.filter(distance=>distance>=30)
 const CHIP_DISTANCES=Array.from({length:37},(_,i)=>12+i*3)
 const PUTT_DISTANCES=[
  ...Array.from({length:9},(_,i)=>2+i),
@@ -559,6 +559,8 @@ const PUTT_DISTANCES=[
 ]
 const PUTT_LAG_DISTANCES=PUTT_DISTANCES.filter(distance=>distance>=20).map(distance=>Math.round(distance/10))
 const PUTT_STAT_DISTANCES=Array.from(new Set([...PUTT_DISTANCES,15,25,...PUTT_LAG_DISTANCES])).sort((a,b)=>a-b)
+const WEDGE_DISTANCE_MIN=WEDGE_DISTANCES[0]
+const WEDGE_DISTANCE_MAX=WEDGE_DISTANCES[WEDGE_DISTANCES.length-1]
 const RANGE_DISTANCE_MIN=RANGE_DISTANCES[0]
 const RANGE_DISTANCE_MAX=RANGE_DISTANCES[RANGE_DISTANCES.length-1]
 const CHIP_DISTANCE_MIN=CHIP_DISTANCES[0]
@@ -567,7 +569,7 @@ const PUTT_DISTANCE_MIN=PUTT_DISTANCES[0]
 const PUTT_DISTANCE_MAX=PUTT_DISTANCES[PUTT_DISTANCES.length-1]
 const CLUB_SETUP_MIN_COLUMN_WIDTH=202
 const CLUB_SETUP_GRID_GAP=4
-const DEFAULT_DISTANCE_SETUP_RANGE={min:ALL_DISTANCE_OPTIONS[0],max:ALL_DISTANCE_OPTIONS[ALL_DISTANCE_OPTIONS.length-1]}
+const DEFAULT_DISTANCE_SETUP_RANGE={min:WEDGE_DISTANCE_MIN,max:WEDGE_DISTANCE_MAX}
 const DEFAULT_CHIP_DISTANCE_SETUP_RANGE={min:CHIP_DISTANCE_MIN,max:CHIP_DISTANCE_MAX}
 const DEFAULT_PUTT_DISTANCE_SETUP_RANGE={min:PUTT_DISTANCE_MIN,max:PUTT_DISTANCE_MAX}
 const DEFAULT_CARRY_YARDAGES={
@@ -580,7 +582,7 @@ const DEFAULT_VISIBLE_DISTANCES=ALL_DISTANCE_OPTIONS.reduce((acc,distance)=>{acc
 const RANGE_WIND_ADJUSTMENTS={wedge:{head:0.02,tail:0.01},iron:{head:0.025,tail:0.015},woodHybrid:{head:0.03,tail:0.025}}
 const RANGE_DEFAULT_TEMP=70
 const RANGE_TEMP_MIN=50
-const RANGE_TEMP_MAX=100
+const RANGE_TEMP_MAX=120
 const RANGE_TEMP_STEP=5
 const RANGE_TEMP_ADJUSTMENTS={wedge:0.007,iron:0.01,woodHybrid:0.013}
 const NEW_SESSION_WARNING_MESSAGE="Your current tracking stats from all modes will be added to Session History. Continuing will erase the current tracking stats and start a new session."
@@ -845,11 +847,14 @@ function normalizeDistanceVisibility(saved,fallback=DEFAULT_VISIBLE_DISTANCES){
  if(saved&&typeof saved==="object") ALL_DISTANCE_OPTIONS.forEach(distance=>{if(typeof saved[distance]==="boolean") map[distance]=saved[distance]})
  return map
 }
-function normalizeDistanceSetupRange(saved,fallback=DEFAULT_DISTANCE_SETUP_RANGE){
- const safeFallback=normalizeDistanceSetupRangeBase(fallback)
+function getYardageDistanceAxis(mode=targetSetMode){return mode==="range"?RANGE_DISTANCES:WEDGE_DISTANCES}
+function getYardageDistanceBounds(mode=targetSetMode){const axis=getYardageDistanceAxis(mode);return {min:axis[0],max:axis[axis.length-1]}}
+function getDefaultDistanceSetupRange(mode=targetSetMode){const bounds=getYardageDistanceBounds(mode);return {min:bounds.min,max:bounds.max}}
+function normalizeDistanceSetupRange(saved,fallback=DEFAULT_DISTANCE_SETUP_RANGE,mode=targetSetMode){
+ const safeFallback=normalizeDistanceSetupRangeBase(fallback,mode)
  if(!saved||typeof saved!=="object") return safeFallback
- let min=normalizeDistanceSetupValue(saved.min,safeFallback.min)
- let max=normalizeDistanceSetupValue(saved.max,safeFallback.max)
+ let min=normalizeDistanceSetupValue(saved.min,safeFallback.min,mode)
+ let max=normalizeDistanceSetupValue(saved.max,safeFallback.max,mode)
  if(min>max){
   if(saved.min!=null&&saved.max==null) max=min
   else if(saved.max!=null&&saved.min==null) min=max
@@ -857,15 +862,17 @@ function normalizeDistanceSetupRange(saved,fallback=DEFAULT_DISTANCE_SETUP_RANGE
  }
  return {min,max}
 }
-function normalizeDistanceSetupRangeBase(range){
- const min=normalizeDistanceSetupValue(range&&range.min,DEFAULT_DISTANCE_SETUP_RANGE.min)
- const max=normalizeDistanceSetupValue(range&&range.max,DEFAULT_DISTANCE_SETUP_RANGE.max)
- return min<=max ? {min,max} : {...DEFAULT_DISTANCE_SETUP_RANGE}
+function normalizeDistanceSetupRangeBase(range,mode=targetSetMode){
+ const bounds=getYardageDistanceBounds(mode)
+ const min=normalizeDistanceSetupValue(range&&range.min,bounds.min,mode)
+ const max=normalizeDistanceSetupValue(range&&range.max,bounds.max,mode)
+ return min<=max ? {min,max} : getDefaultDistanceSetupRange(mode)
 }
-function normalizeDistanceSetupValue(value,fallback){
+function normalizeDistanceSetupValue(value,fallback,mode=targetSetMode){
  const numeric=Number(value)
  if(!Number.isFinite(numeric)) return fallback
- return Math.max(RANGE_DISTANCE_MIN,Math.min(RANGE_DISTANCE_MAX,Math.round(numeric/5)*5))
+ const bounds=getYardageDistanceBounds(mode)
+ return Math.max(bounds.min,Math.min(bounds.max,Math.round(numeric/5)*5))
 }
 function normalizeChipDistanceVisibility(saved,fallback=defaultChipDistanceVisibility){
  const map={}
@@ -992,9 +999,11 @@ function saveDistanceVisibility(){
 }
 function loadDefaultDistanceSetupRangeByMode(){
  const saved=readStoredObject(DISTANCE_DEFAULT_SETUP_RANGE_BY_MODE_KEY)
- const legacy=normalizeDistanceSetupRange(readStoredObject(DISTANCE_DEFAULT_SETUP_RANGE_KEY))
+ const legacyStored=readStoredObject(DISTANCE_DEFAULT_SETUP_RANGE_KEY)
  return YARDAGE_SETUP_MODES.reduce((map,mode)=>{
-  map[mode]=normalizeDistanceSetupRange(saved&&saved[mode],legacy)
+  const builtIn=getDefaultDistanceSetupRange(mode)
+  const legacy=normalizeDistanceSetupRange(legacyStored,builtIn,mode)
+  map[mode]=normalizeDistanceSetupRange(saved&&saved[mode],legacy,mode)
   return map
  },{})
 }
@@ -1003,19 +1012,19 @@ function loadDistanceSetupRangeByMode(){
  const saved=readStoredObject(DISTANCE_SETUP_RANGE_BY_MODE_KEY)
  const legacy=readStoredObject(DISTANCE_SETUP_RANGE_KEY)
  return YARDAGE_SETUP_MODES.reduce((map,mode)=>{
-  const fallback=defaultDistanceSetupRangeByMode[mode]||{...DEFAULT_DISTANCE_SETUP_RANGE}
-  const migrated=normalizeDistanceSetupRange(legacy,fallback)
-  map[mode]=normalizeDistanceSetupRange(saved&&saved[mode],migrated)
+  const fallback=defaultDistanceSetupRangeByMode[mode]||getDefaultDistanceSetupRange(mode)
+  const migrated=normalizeDistanceSetupRange(legacy,fallback,mode)
+  map[mode]=normalizeDistanceSetupRange(saved&&saved[mode],migrated,mode)
   return map
  },{})
 }
 function persistDistanceSetupRangeByMode(){localStorage.setItem(DISTANCE_SETUP_RANGE_BY_MODE_KEY,JSON.stringify(distanceSetupRangeByMode))}
 function saveDefaultDistanceSetupRange(){
- if(YARDAGE_SETUP_MODES.includes(targetSetMode)) defaultDistanceSetupRangeByMode[targetSetMode]=normalizeDistanceSetupRange(defaultDistanceSetupRange)
+ if(YARDAGE_SETUP_MODES.includes(targetSetMode)) defaultDistanceSetupRangeByMode[targetSetMode]=normalizeDistanceSetupRange(defaultDistanceSetupRange,getDefaultDistanceSetupRange(targetSetMode),targetSetMode)
  persistDefaultDistanceSetupRangeByMode()
 }
 function saveDistanceSetupRange(){
- if(YARDAGE_SETUP_MODES.includes(targetSetMode)) distanceSetupRangeByMode[targetSetMode]=normalizeDistanceSetupRange(distanceSetupRange,defaultDistanceSetupRange)
+ if(YARDAGE_SETUP_MODES.includes(targetSetMode)) distanceSetupRangeByMode[targetSetMode]=normalizeDistanceSetupRange(distanceSetupRange,defaultDistanceSetupRange,targetSetMode)
  persistDistanceSetupRangeByMode()
 }
 function activateModeSetupState(mode=targetSetMode){
@@ -1028,8 +1037,8 @@ function activateModeSetupState(mode=targetSetMode){
  if(YARDAGE_SETUP_MODES.includes(mode)){
   defaultDistanceVisibility=defaultDistanceVisibilityByMode[mode]||normalizeDistanceVisibility(null)
   distanceVisibility=normalizeDistanceVisibility(defaultDistanceVisibility)
-  defaultDistanceSetupRange=defaultDistanceSetupRangeByMode[mode]||{...DEFAULT_DISTANCE_SETUP_RANGE}
-  distanceSetupRange=normalizeDistanceSetupRange(defaultDistanceSetupRange)
+  defaultDistanceSetupRange=normalizeDistanceSetupRange(defaultDistanceSetupRangeByMode[mode]||getDefaultDistanceSetupRange(mode),getDefaultDistanceSetupRange(mode),mode)
+  distanceSetupRange=normalizeDistanceSetupRange(defaultDistanceSetupRange,defaultDistanceSetupRange,mode)
   defaultDistanceVisibilityByMode[mode]=defaultDistanceVisibility
   distanceVisibilityByMode[mode]=distanceVisibility
   defaultDistanceSetupRangeByMode[mode]=defaultDistanceSetupRange
@@ -1090,7 +1099,8 @@ function areAllClubsOn(clubs){
 function areAllDistancesOn(distances){return distances.length>0&&distances.every(distance=>distanceVisibility[distance]!==false)}
 function getDistanceSetupDisplayOptions(mode=targetSetMode){
  const range=mode===targetSetMode?distanceSetupRange:distanceSetupRangeByMode[mode]||distanceSetupRange
- return ALL_DISTANCE_OPTIONS.filter(distance=>distance>=range.min&&distance<=range.max)
+ const axis=getYardageDistanceAxis(mode)
+ return axis.filter(distance=>distance>=range.min&&distance<=range.max)
 }
 function getChipDistanceSetupDisplayOptions(){return CHIP_DISTANCES.filter(distance=>distance>=chipDistanceSetupRange.min&&distance<=chipDistanceSetupRange.max)}
 function getPuttDistanceSetupDisplayOptions(){return PUTT_DISTANCES.filter(distance=>distance>=puttDistanceSetupRange.min&&distance<=puttDistanceSetupRange.max)}
@@ -1105,14 +1115,15 @@ function getModeDistanceOptions(mode=targetSetMode){
  if(mode==="putt") return getPuttDistanceSetupDisplayOptions()
  const carryBounds=getSelectedClubCarryBounds(mode)
  if(mode==="range"){
-  if(!carryBounds) return ALL_DISTANCE_OPTIONS.slice()
-  return ALL_DISTANCE_OPTIONS.filter(distance=>distance>=carryBounds.min&&distance<=carryBounds.max)
+  const rangeDistances=getDistanceSetupDisplayOptions(mode)
+  if(!carryBounds) return rangeDistances
+  return rangeDistances.filter(distance=>distance>=carryBounds.min&&distance<=carryBounds.max)
  }
  let distances=getDistanceSetupDisplayOptions(mode)
  if(mode==="wedge"){
   const maxCarry=carryBounds&&carryBounds.min||0
   let cappedDistances=distances.filter(distance=>distance<=maxCarry)
-  if(!cappedDistances.length) cappedDistances=ALL_DISTANCE_OPTIONS.filter(distance=>distance<=maxCarry)
+  if(!cappedDistances.length) cappedDistances=getDistanceSetupDisplayOptions(mode).filter(distance=>distance<=maxCarry)
   distances=cappedDistances.length ? cappedDistances : [MODE_CONFIG.wedge.defaultDistance]
  }
  return distances
@@ -1659,7 +1670,7 @@ function loadPuttStreaks(){try{return ensurePuttCounterShape(JSON.parse(localSto
 function savePuttStreaks(){localStorage.setItem(PUTT_STREAKS_KEY,JSON.stringify(puttStreaks))}
 function loadPuttBestStreaks(){try{return ensurePuttCounterShape(JSON.parse(localStorage.getItem(PUTT_BEST_STREAKS_KEY)))}catch{return defaultPuttCounters()}}
 function savePuttBestStreaks(){localStorage.setItem(PUTT_BEST_STREAKS_KEY,JSON.stringify(puttBestStreaks))}
-function normalizeRangeWindSpeed(value,fallback=0){if(value===null||value==="")return fallback;const numeric=Number(value);return Number.isFinite(numeric)?Math.max(-25,Math.min(25,numeric)):fallback}
+function normalizeRangeWindSpeed(value,fallback=0){if(value===null||value==="")return fallback;const numeric=Number(value);return Number.isFinite(numeric)?Math.max(-30,Math.min(30,numeric)):fallback}
 function normalizeRangeTemperature(value,fallback=RANGE_DEFAULT_TEMP){if(value===null||value==="")return fallback;const numeric=Number(value);return Number.isFinite(numeric)?Math.max(RANGE_TEMP_MIN,Math.min(RANGE_TEMP_MAX,numeric)):fallback}
 function loadRangeWindSpeed(){try{return normalizeRangeWindSpeed(localStorage.getItem(RANGE_WIND_SPEED_KEY))}catch{return 0}}
 function saveRangeWindSpeed(){localStorage.setItem(RANGE_WIND_SPEED_KEY,rangeWindSpeed)}
@@ -2880,7 +2891,8 @@ function renderDistanceSetupPanel(panel){
  const displayTenYardDistances=displayDistances.filter(distance=>TEN_YARD_INTERVALS.includes(distance))
  const copy=document.createElement("div")
  copy.className="setup-copy"
- copy.textContent="Show or hide distance pills in 5-yard or 10-yard increments ranging from 5 yards up through 300 yards."
+ const setupBounds=getYardageDistanceBounds(targetSetMode)
+ copy.textContent="Show or hide distance pills in 5-yard or 10-yard increments ranging from "+setupBounds.min+" to "+setupBounds.max+" yards."
  const toolbar=document.createElement("div")
  toolbar.className="setup-toolbar"
  const showAllButton=document.createElement("button")
@@ -2922,8 +2934,8 @@ function renderDistanceSetupPanel(panel){
  minLabel.textContent="Min Yardage"
  const minInput=document.createElement("input")
  minInput.type="number"
- minInput.min=String(RANGE_DISTANCE_MIN)
- minInput.max=String(RANGE_DISTANCE_MAX)
+ minInput.min=String(setupBounds.min)
+ minInput.max=String(setupBounds.max)
  minInput.step="5"
  minInput.className="setup-range-input"
  minInput.setAttribute("data-distance-range","min")
@@ -2936,8 +2948,8 @@ function renderDistanceSetupPanel(panel){
  maxLabel.textContent="Max Yardage"
  const maxInput=document.createElement("input")
  maxInput.type="number"
- maxInput.min=String(RANGE_DISTANCE_MIN)
- maxInput.max=String(RANGE_DISTANCE_MAX)
+ maxInput.min=String(setupBounds.min)
+ maxInput.max=String(setupBounds.max)
  maxInput.step="5"
  maxInput.className="setup-range-input"
  maxInput.setAttribute("data-distance-range","max")
@@ -3477,7 +3489,7 @@ function refreshRangeRecommendation(){
  rangeSelections.random.distance=currentDistance
  syncCurrentSelection()
 }
-function adjustWindSpeed(delta){rangeWindSpeed=Math.max(-25,Math.min(25,rangeWindSpeed+delta));persistLiveState();refreshRangeRecommendation()}
+function adjustWindSpeed(delta){rangeWindSpeed=Math.max(-30,Math.min(30,rangeWindSpeed+delta));persistLiveState();refreshRangeRecommendation()}
 function adjustRangeTemperature(delta){rangeTemperature=Math.max(RANGE_TEMP_MIN,Math.min(RANGE_TEMP_MAX,rangeTemperature+delta));persistLiveState();refreshRangeRecommendation()}
 function getShotResult(shot,trackerKey){return shot&&shot[trackerKey]}
 function buildShotPayload(resultAccuracy,resultContact){
